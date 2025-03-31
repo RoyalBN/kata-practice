@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-
 class DefaultDiscountServiceTest {
 
     private DefaultDiscountService defaultDiscountService;
@@ -50,6 +49,4 @@ class DefaultDiscountServiceTest {
         assertThat(totalWithoutDiscount).isNotNull();
         assertThat(totalWithoutDiscount).isEqualTo(25.0);
     }
-
-
 }

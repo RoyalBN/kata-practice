@@ -1,3 +1,4 @@
+import org.example.factory.OrderFactory;
 import org.example.model.Order;
 import org.example.OrderProcessor;
 import org.example.model.ProcessOrderRequest;
@@ -31,6 +32,9 @@ public class OrderProcessorTest {
     @Mock
     private DiscountService discountService;
 
+    @Mock
+    private OrderFactory orderFactory;
+
     @InjectMocks
     private OrderProcessor orderProcessor;
 
@@ -45,7 +49,6 @@ public class OrderProcessorTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        //this.orderProcessor = new OrderProcessor(orderRepository, discountService);
         itemsList = Arrays.asList("Apple", "Banana", "Orange");
         prices = Arrays.asList(2.2, 3.3, 4.4);
         customerName = "test";
@@ -116,7 +119,9 @@ public class OrderProcessorTest {
         double total = prices.stream().mapToDouble(Double::doubleValue).sum(); // Calculer le vrai total
         double expectedTotalWithDiscount = 8.91;
 
+
         when(discountService.applyDiscount(total, true)).thenReturn(expectedTotalWithDiscount);
+        when(orderFactory.createOrder(anyInt(), anyString(), anyList(), anyDouble())).thenReturn(orderWithDiscount);
 
         ProcessOrderRequest processOrderRequest = ProcessOrderRequest.builder()
                 .id(validId)
@@ -142,6 +147,7 @@ public class OrderProcessorTest {
         assertThat(savedOrder.getItems()).containsExactlyElementsOf(itemsList);
 
         verify(discountService, times(1)).applyDiscount(total, true);
+        verify(orderFactory, times(1)).createOrder(anyInt(), anyString(), anyList(), anyDouble());
         verify(orderRepository, times(1)).save(any(Order.class));
     }
 }
