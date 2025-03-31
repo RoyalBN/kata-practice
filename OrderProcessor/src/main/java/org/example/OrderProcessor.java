@@ -10,9 +10,9 @@ import java.util.List;
 
 public class OrderProcessor {
 
-    private OrderRepository orderRepository;
-    private DiscountService discountService;
-    private OrderFactory orderFactory;
+    private final OrderRepository orderRepository;
+    private final DiscountService discountService;
+    private final OrderFactory orderFactory;
 
     public OrderProcessor(OrderRepository orderRepository, DiscountService discountService, OrderFactory orderFactory) {
         this.orderRepository = orderRepository;

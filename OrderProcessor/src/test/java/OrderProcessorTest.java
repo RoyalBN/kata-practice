@@ -26,14 +26,9 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class OrderProcessorTest {
 
-    @Mock
-    private OrderRepository orderRepository;
-
-    @Mock
-    private DiscountService discountService;
-
-    @Mock
-    private OrderFactory orderFactory;
+    @Mock private OrderRepository orderRepository;
+    @Mock private DiscountService discountService;
+    @Mock private OrderFactory orderFactory;
 
     @InjectMocks
     private OrderProcessor orderProcessor;
@@ -48,7 +43,7 @@ public class OrderProcessorTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
+        orderProcessor = new OrderProcessor(orderRepository, discountService, orderFactory);
         itemsList = Arrays.asList("Apple", "Banana", "Orange");
         prices = Arrays.asList(2.2, 3.3, 4.4);
         customerName = "test";
