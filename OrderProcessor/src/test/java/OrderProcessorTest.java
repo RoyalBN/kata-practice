@@ -1,10 +1,16 @@
 import org.example.model.Order;
 import org.example.OrderProcessor;
 import org.example.model.ProcessOrderRequest;
+import org.example.repository.OrderRepository;
+import org.example.service.DiscountService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.catchThrowable;
@@ -14,22 +20,38 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class OrderProcessorTest {
 
-    private Order order;
+    @Mock
+    private OrderRepository orderRepository;
+
+    @Mock
+    private DiscountService discountService;
+
+    @InjectMocks
     private OrderProcessor orderProcessor;
+
     private List<Order> orders = new ArrayList<>();
-    private List<String> items = Arrays.asList("Apple", "Banana", "Orange");
-    private List<Double> prices = Arrays.asList(2.2, 3.3, 4.4);
-    private String customerName = "test";
-    double total = 9.9;
+    private List<String> itemsList;
+    private List<Double> prices;
+
+    private Order orderWithoutDiscount;
+    private Order orderWithDiscount;
+    private String customerName;
 
     @BeforeEach
     void setUp() {
-        this.orderProcessor = new OrderProcessor();
-        this.orders = null;
+        MockitoAnnotations.openMocks(this);
+        //this.orderProcessor = new OrderProcessor(orderRepository, discountService);
+        itemsList = Arrays.asList("Apple", "Banana", "Orange");
+        prices = Arrays.asList(2.2, 3.3, 4.4);
+        customerName = "test";
+
+        orderWithoutDiscount = Order.builder().id(1).customerName("test").items(itemsList).total(9.9).build();
+        orderWithDiscount = Order.builder().id(2).customerName("test").items(itemsList).total(8.91).build();
     }
 
     @Test
@@ -41,45 +63,48 @@ public class OrderProcessorTest {
         ProcessOrderRequest processOrderRequest = ProcessOrderRequest.builder()
                 .id(invalidId)
                 .customerName(customerName)
-                .items(items)
+                .items(itemsList)
                 .prices(prices)
                 .isDiscounted(false)
                 .build();
 
         // Act
         Throwable exceptionThrown = catchThrowable(() -> orderProcessor.processOrder(processOrderRequest));
-        this.orders = orderProcessor.getOrders();
+        List<Order> orders = orderRepository.getOrders();
 
         // Verify
         assertThat(exceptionThrown)
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Order ID must be greater than zero");
 
-        assertThat(this.orders).isEmpty();
+        assertThat(orders).isEmpty();
 
     }
 
     @Test
-    @DisplayName("Create new order")
-    void should_create_new_order() {
+    @DisplayName("Create new order without discount")
+    void should_create_new_order_without_discount() {
         // Arrange
         int validId = 1;
+        double expectedTotalWithDiscount = 9.9;
+        when(orderRepository.getOrders()).thenReturn(List.of(orderWithoutDiscount));
 
         ProcessOrderRequest processOrderRequest = ProcessOrderRequest.builder()
                 .id(validId)
                 .customerName(customerName)
-                .items(items)
+                .items(itemsList)
                 .prices(prices)
                 .isDiscounted(false)
                 .build();
 
         // Act
         orderProcessor.processOrder(processOrderRequest);
-        this.orders = orderProcessor.getOrders();
+        List<Order> orders = orderRepository.getOrders();
 
         // Verify
         assertThat(orders).isNotEmpty();
         assertThat(orders.size()).isEqualTo(1);
+        assertThat(orders.get(0).getTotal()).isEqualTo(expectedTotalWithDiscount);
         assertThat(orders.get(0).getCustomerName()).isEqualTo(customerName);
     }
 
@@ -87,23 +112,36 @@ public class OrderProcessorTest {
     @DisplayName("Add discount to total")
     void should_add_discount_to_total() {
         // Arrange
-        int validId = 1;
+        int validId = 2;
+        double total = prices.stream().mapToDouble(Double::doubleValue).sum(); // Calculer le vrai total
+        double expectedTotalWithDiscount = 8.91;
+
+        when(discountService.applyDiscount(total, true)).thenReturn(expectedTotalWithDiscount);
 
         ProcessOrderRequest processOrderRequest = ProcessOrderRequest.builder()
                 .id(validId)
                 .customerName(customerName)
-                .items(items)
+                .items(itemsList)
                 .prices(prices)
                 .isDiscounted(true)
                 .build();
 
         // Act
         orderProcessor.processOrder(processOrderRequest);
-        this.orders = orderProcessor.getOrders();
+
+        // Capture l'Order sauvegardé
+        ArgumentCaptor<Order> orderCaptor = ArgumentCaptor.forClass(Order.class);
+        verify(orderRepository).save(orderCaptor.capture());
+
+        Order savedOrder = orderCaptor.getValue(); // Récupération de l'Order sauvegardé
 
         // Verify
-        assertThat(orders).isNotEmpty();
-        assertThat(orders.size()).isEqualTo(1);
-        assertThat(orders.get(0).getTotal()).isEqualTo(8.91);
+        assertThat(savedOrder).isNotNull();
+        assertThat(savedOrder.getTotal()).isEqualTo(expectedTotalWithDiscount);
+        assertThat(savedOrder.getCustomerName()).isEqualTo(customerName);
+        assertThat(savedOrder.getItems()).containsExactlyElementsOf(itemsList);
+
+        verify(discountService, times(1)).applyDiscount(total, true);
+        verify(orderRepository, times(1)).save(any(Order.class));
     }
 }

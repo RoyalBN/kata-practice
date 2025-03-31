@@ -5,7 +5,7 @@ import org.example.model.Order;
 import java.util.ArrayList;
 import java.util.List;
 
-public class InMemoryOrderRepository {
+public class InMemoryOrderRepository implements OrderRepository {
 
     private final List<Order> orders = new ArrayList<>();
 

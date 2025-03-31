@@ -2,18 +2,25 @@ package org.example;
 
 import org.example.model.Order;
 import org.example.model.ProcessOrderRequest;
+import org.example.repository.OrderRepository;
+import org.example.service.DiscountService;
 
 import java.util.List;
-import java.util.ArrayList;
 
 public class OrderProcessor {
-    public static final double DISCOUNT = 0.9;
-    private List<Order> orders = new ArrayList<>();
+
+    private OrderRepository orderRepository;
+    private DiscountService discountService;
+
+    public OrderProcessor(OrderRepository orderRepository, DiscountService discountService) {
+        this.orderRepository = orderRepository;
+        this.discountService = discountService;
+    }
 
     public void processOrder(ProcessOrderRequest processOrderRequest) {
         validateId(processOrderRequest.getId());
         double orderTotal = calculateTotal(processOrderRequest.getPrices());
-        orderTotal = applyDiscount(orderTotal, processOrderRequest.isDiscounted());
+        orderTotal = discountService.applyDiscount(orderTotal, processOrderRequest.isDiscounted());
         createAndAddOrder(processOrderRequest.getId(), processOrderRequest.getCustomerName(), processOrderRequest.getItems(), orderTotal);
     }
 
@@ -24,12 +31,7 @@ public class OrderProcessor {
     }
 
     private double calculateTotal(List<Double> prices) {
-        double total = prices.stream().mapToDouble(Double::doubleValue).sum();
-        return total;
-    }
-
-    private double applyDiscount(double total, boolean isDiscounted) {
-        return isDiscounted ? total * DISCOUNT : total;
+        return prices.stream().mapToDouble(Double::doubleValue).sum();
     }
 
     private void createAndAddOrder(int id, String customerName, List<String> items, double total) {
@@ -40,11 +42,6 @@ public class OrderProcessor {
                 .total(total)
                 .build();
 
-        orders.add(newOrder);
-    }
-
-
-    public List<Order> getOrders() {
-        return orders;
+        orderRepository.save(newOrder);
     }
 }
