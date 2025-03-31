@@ -36,12 +36,12 @@ public class OrderProcessorTest {
         // Arrange
         int invalidId = -1;
 
-        ProcessOrderRequest processOrderRequest = new ProcessOrderRequest.Builder()
-                .setId(invalidId)
-                .setCustomerName(customerName)
-                .setItems(items)
-                .setPrices(prices)
-                .setDiscounted(false)
+        ProcessOrderRequest processOrderRequest = ProcessOrderRequest.builder()
+                .id(invalidId)
+                .customerName(customerName)
+                .items(items)
+                .prices(prices)
+                .isDiscounted(false)
                 .build();
 
         // Act
@@ -63,12 +63,12 @@ public class OrderProcessorTest {
         // Arrange
         int validId = 1;
 
-        ProcessOrderRequest processOrderRequest = new ProcessOrderRequest.Builder()
-                .setId(validId)
-                .setCustomerName(customerName)
-                .setItems(items)
-                .setPrices(prices)
-                .setDiscounted(false)
+        ProcessOrderRequest processOrderRequest = ProcessOrderRequest.builder()
+                .id(validId)
+                .customerName(customerName)
+                .items(items)
+                .prices(prices)
+                .isDiscounted(false)
                 .build();
 
         // Act
@@ -87,12 +87,12 @@ public class OrderProcessorTest {
         // Arrange
         int validId = 1;
 
-        ProcessOrderRequest processOrderRequest = new ProcessOrderRequest.Builder()
-                .setId(validId)
-                .setCustomerName(customerName)
-                .setItems(items)
-                .setPrices(prices)
-                .setDiscounted(true)
+        ProcessOrderRequest processOrderRequest = ProcessOrderRequest.builder()
+                .id(validId)
+                .customerName(customerName)
+                .items(items)
+                .prices(prices)
+                .isDiscounted(true)
                 .build();
 
         // Act

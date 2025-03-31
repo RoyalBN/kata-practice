@@ -25,11 +25,11 @@ public class OrderProcessor {
     }
 
     private void createAndAddOrder(int id, String customerName, List<String> items, double total) {
-        Order newOrder = new OrderBuilder()
-                .setId(id)
-                .setCustomerName(customerName)
-                .setItems(items)
-                .setTotal(total)
+        Order newOrder = Order.builder()
+                .id(id)
+                .customerName(customerName)
+                .items(items)
+                .total(total)
                 .build();
 
         orders.add(newOrder);
