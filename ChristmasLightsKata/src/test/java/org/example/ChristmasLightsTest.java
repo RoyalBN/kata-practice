@@ -1,5 +1,6 @@
 package org.example;
 
+import org.example.models.Grid;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -60,20 +61,6 @@ class ChristmasLightsTest {
 
 
     // [ON] Turn on a single light
-    //@Test
-    //@DisplayName("[ON] Turn on a single light")
-    //void should_turn_on_a_single_light() {
-    //    // Arrange
-    //    ChristmasLights christmasLights = new ChristmasLights();
-    //
-    //    // Act
-    //    christmasLights.turnOnLightAt(0,1);
-    //    int updatedLightValue = christmasLights.getLightValueAt(0,1);
-    //
-    //    // Assert
-    //    assertThat(updatedLightValue).isEqualTo(1);
-    //}
-
     // [ON] Turn on a single row of lights
     // [ON] Turn on a single column of lights
     // [ON] Turn on all lights

@@ -4,20 +4,18 @@ import org.example.models.Grid;
 
 public class ChristmasLights {
 
-    private int[][] grid;
+    private Grid grid;
 
     public void createGrid(int width, int height) {
-        this.grid = new int[width][height];
+        this.grid = new Grid();
+        this.grid.createGrid(width, height);
     }
 
     public int getGridSize() {
-        return grid.length;
+        return grid.getGridSize();
     }
 
     public int getLightValueAt(int row, int column) {
-        return grid[row][column];
+        return grid.getLightValueAt(row, column);
     }
-
-
-
 }
