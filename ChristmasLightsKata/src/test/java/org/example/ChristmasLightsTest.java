@@ -4,7 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  *  - Deploy one million Christmas lights in 1000 x 1000 grid
@@ -18,6 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
  *  - Each coordinate pair represents opposite corners of a rectangle, inclusive
  *  /!| The lights all start turned off.
  *
+ *  - [INIT] before a test name concerns the initialization of the grid
  *  - [ON] before a test name concerns the Turn-ON functionality
  *  - [OFF] before a test name concerns the Turn-OFF functionality
  *  - [TOGGLE] before a test name concerns the TOGGLE functionality
@@ -25,13 +26,54 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class ChristmasLightsTest {
 
+    private int GRID_WIDTH = 1000;
+    private int GRID_HEIGHT = 1000;
+    private ChristmasLights christmasLights;
+
     @BeforeEach
     void setUp() {
+        christmasLights = new ChristmasLights();
+        christmasLights.createGrid(GRID_WIDTH, GRID_HEIGHT);
     }
 
-    // All lights should be turned off at start
+    @Test
+    @DisplayName("[INIT] Create 1000 x 1000 Grid")
+    void should_create_a_grid_when_creating_new_class_instance() {
+        // Act & Assert
+        int gridSize = christmasLights.getGridSize();
+        assertThat(gridSize).isEqualTo(1000);
+    }
+
+    // [INIT] All lights should be turned off at start
+    @Test
+    @DisplayName("[INIT] All lights should be turned off at start")
+    void should_initialize_grid_with_all_lights_turned_off() {
+        // Act & Assert
+        int gridSize = christmasLights.getGridSize();
+
+        assertThat(gridSize).isEqualTo(1000);
+        assertThat(christmasLights.getLightValueAt(0,0)).isEqualTo(0);
+        assertThat(christmasLights.getLightValueAt(0,999)).isEqualTo(0);
+        assertThat(christmasLights.getLightValueAt(999,0)).isEqualTo(0);
+        assertThat(christmasLights.getLightValueAt(999,999)).isEqualTo(0);
+    }
+
 
     // [ON] Turn on a single light
+    //@Test
+    //@DisplayName("[ON] Turn on a single light")
+    //void should_turn_on_a_single_light() {
+    //    // Arrange
+    //    ChristmasLights christmasLights = new ChristmasLights();
+    //
+    //    // Act
+    //    christmasLights.turnOnLightAt(0,1);
+    //    int updatedLightValue = christmasLights.getLightValueAt(0,1);
+    //
+    //    // Assert
+    //    assertThat(updatedLightValue).isEqualTo(1);
+    //}
+
     // [ON] Turn on a single row of lights
     // [ON] Turn on a single column of lights
     // [ON] Turn on all lights
