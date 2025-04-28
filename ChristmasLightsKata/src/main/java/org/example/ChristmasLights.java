@@ -18,4 +18,12 @@ public class ChristmasLights {
     public int getLightValueAt(int row, int column) {
         return grid.getLightValueAt(row, column);
     }
+
+    public void turnOnLightAt(int row, int column) {
+        grid.setLightValueAt(row, column);
+    }
+
+    public void turnOnLightOnRange(int beginRow, int endRow, int beginColumn, int endColumn) {
+        grid.turnOnLightOnRange(beginRow, endRow, beginColumn, endColumn);
+    }
 }

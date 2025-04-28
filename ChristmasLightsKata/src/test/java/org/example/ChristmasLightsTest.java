@@ -1,6 +1,5 @@
 package org.example;
 
-import org.example.models.Grid;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -45,7 +44,6 @@ class ChristmasLightsTest {
         assertThat(gridSize).isEqualTo(1000);
     }
 
-    // [INIT] All lights should be turned off at start
     @Test
     @DisplayName("[INIT] All lights should be turned off at start")
     void should_initialize_grid_with_all_lights_turned_off() {
@@ -59,11 +57,55 @@ class ChristmasLightsTest {
         assertThat(christmasLights.getLightValueAt(999,999)).isEqualTo(0);
     }
 
+    @Test
+    @DisplayName("[ON] Turn on a single light")
+    void should_turn_on_a_single_light() {
+        // Act & Assert
+        christmasLights.turnOnLightAt(1,1);
+        assertThat(christmasLights.getLightValueAt(1,1)).isEqualTo(1);
+    }
 
-    // [ON] Turn on a single light
-    // [ON] Turn on a single row of lights
-    // [ON] Turn on a single column of lights
-    // [ON] Turn on all lights
+    @Test
+    @DisplayName("[ON] Turn on a single row of lights")
+    void should_turn_on_a_single_row_of_lights() {
+        // Act & Assert
+        christmasLights.turnOnLightOnRange(0, 0, 0, 999);
+
+        // First line --> value = 1
+        assertThat(christmasLights.getLightValueAt(0,0)).isEqualTo(1);
+        assertThat(christmasLights.getLightValueAt(0,999)).isEqualTo(1);
+
+        // Second line --> value = 0
+        assertThat(christmasLights.getLightValueAt(1,0)).isEqualTo(0);
+        assertThat(christmasLights.getLightValueAt(999,0)).isEqualTo(0);
+    }
+
+    @Test
+    @DisplayName("[ON] Turn on a single column of lights")
+    void should_turn_on_a_single_column_of_lights() {
+        // Act & Assert
+        christmasLights.turnOnLightOnRange(0, 999, 0, 0);
+
+        // First column --> value = 1
+        assertThat(christmasLights.getLightValueAt(0,0)).isEqualTo(1);
+        assertThat(christmasLights.getLightValueAt(999,0)).isEqualTo(1);
+
+        // Second column --> value = 0
+        assertThat(christmasLights.getLightValueAt(0,1)).isEqualTo(0);
+        assertThat(christmasLights.getLightValueAt(999,1)).isEqualTo(0);
+    }
+
+    @Test
+    @DisplayName("[ON] Turn on all lights")
+    void should_turn_on_all_lights() {
+        // Act & Assert
+        christmasLights.turnOnLightOnRange(0, 999, 0, 999);
+
+        assertThat(christmasLights.getLightValueAt(0,0)).isEqualTo(1);
+        assertThat(christmasLights.getLightValueAt(0,999)).isEqualTo(1);
+        assertThat(christmasLights.getLightValueAt(999,0)).isEqualTo(1);
+        assertThat(christmasLights.getLightValueAt(999,999)).isEqualTo(1);
+    }
 
     // [OFF] Turn off a single light
     // [OFF] Turn off a single row of lights
