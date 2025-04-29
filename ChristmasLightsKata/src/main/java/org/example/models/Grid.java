@@ -53,4 +53,15 @@ public class Grid {
         }
     }
 
+    public void toggleLightAt(int row, int column) {
+        grid[row][column] = grid[row][column] == 1 ? 0 : 1;
+    }
+
+    public void toggleLightOnRange(int beginRow, int beginColumn, int endRow, int endColumn) {
+        for (int i = beginRow; i <= endRow; i++) {
+            for (int j = beginColumn; j <= endColumn; j++) {
+                grid[i][j] = grid[i][j] == 1 ? 0 : 1;
+            }
+        }
+    }
 }

@@ -34,4 +34,12 @@ public class ChristmasLights {
     public void turnOffLightOnRange(int beginRow, int beginColumn, int endRow, int endColumn) {
         grid.turnOffLightOnRange(beginRow, beginColumn, endRow, endColumn);
     }
+
+    public void toggleLightAt(int row, int column) {
+        grid.toggleLightAt(row, column);
+    }
+
+    public void toggleLightOnRange(int beginRow, int beginColumn, int endRow, int endColumn) {
+        grid.toggleLightOnRange(beginRow, beginColumn, endRow, endColumn);
+    }
 }

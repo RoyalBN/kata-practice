@@ -240,14 +240,98 @@ class ChristmasLightsTest {
         assertThat(christmasLights.getLightValueAt(808,453)).isEqualTo(0);
     }
 
+    @Test
+    @DisplayName("[TOGGLE] Toggle a single light")
+    void should_toggle_a_single_light() {
+        // Arrange
+        christmasLights.turnOnLightAt(1,1);
 
-    // [TOGGLE] Toggle a single light
-    // [TOGGLE] Toggle a single row of lights
-    // [TOGGLE] Toggle a single column of lights
-    // [TOGGLE] Toggle all lights
+        // Act
+        christmasLights.toggleLightAt(1,1);
 
-    // [TOGGLE] Toggle from [720,196] through [897,994]
-    // [TOGGLE] Toggle from [831,394] through [904,860]
+        // Assert
+        assertThat(christmasLights.getLightValueAt(1,1)).isEqualTo(0);
+    }
 
+    @Test
+    @DisplayName("[TOGGLE] Toggle a single row of lights")
+    void should_toggle_a_single_row_of_lights() {
+        // Arrange
+        christmasLights.turnOnLightOnRange(0, 0, 0, 999);
 
+        // Act
+        christmasLights.toggleLightOnRange(0, 0, 0, 999);
+
+        // Assert
+        assertThat(christmasLights.getLightValueAt(0,0)).isEqualTo(0);
+        assertThat(christmasLights.getLightValueAt(0,999)).isEqualTo(0);
+    }
+
+    @Test
+    @DisplayName("[TOGGLE] Toggle a single column of lights")
+    void should_toggle_a_single_column_of_lights() {
+        // Arrange
+        christmasLights.turnOnLightOnRange(0, 0, 999, 0);
+
+        // Act
+        christmasLights.toggleLightOnRange(0, 0, 999, 0);
+
+        // Assert
+        assertThat(christmasLights.getLightValueAt(0,0)).isEqualTo(0);
+        assertThat(christmasLights.getLightValueAt(999,0)).isEqualTo(0);
+    }
+
+    @Test
+    @DisplayName("[TOGGLE] Toggle all lights")
+    void should_toggle_all_lights() {
+        // Arrange
+        christmasLights.turnOnLightOnRange(0, 0, 999, 999);
+        assertThat(christmasLights.getLightValueAt(0,0)).isEqualTo(1);
+        assertThat(christmasLights.getLightValueAt(0,999)).isEqualTo(1);
+        assertThat(christmasLights.getLightValueAt(999,0)).isEqualTo(1);
+        assertThat(christmasLights.getLightValueAt(999,999)).isEqualTo(1);
+
+        // Act
+        christmasLights.toggleLightOnRange(0, 0, 999, 999);
+
+        // Assert
+        assertThat(christmasLights.getLightValueAt(0,0)).isEqualTo(0);
+        assertThat(christmasLights.getLightValueAt(0,999)).isEqualTo(0);
+        assertThat(christmasLights.getLightValueAt(999,0)).isEqualTo(0);
+        assertThat(christmasLights.getLightValueAt(999,999)).isEqualTo(0);
+    }
+
+    @Test
+    @DisplayName("[TOGGLE] Toggle lights from [720,196] through [897,994]")
+    void should_toggle_lights_from_range_720_196_through_897_994() {
+        // Arrange
+        christmasLights.turnOnLightOnRange(720, 196, 897, 994);
+        assertThat(christmasLights.getLightValueAt(720,196)).isEqualTo(1);
+        assertThat(christmasLights.getLightValueAt(897,994)).isEqualTo(1);
+
+        // Act
+        christmasLights.toggleLightOnRange(720, 196, 897, 994);
+
+        // Assert
+        assertThat(christmasLights.getLightValueAt(720,196)).isEqualTo(0);
+        assertThat(christmasLights.getLightValueAt(897,994)).isEqualTo(0);
+    }
+
+    @Test
+    @DisplayName("[TOGGLE] Toggle from [831,394] through [904,860]")
+    void should_toggle_lights_from_range_831_394_through_904_860() {
+        // Arrange
+        christmasLights.turnOnLightOnRange(831, 394, 904, 860);
+        assertThat(christmasLights.getLightValueAt(831,394)).isEqualTo(1);
+        assertThat(christmasLights.getLightValueAt(904,860)).isEqualTo(1);
+
+        // Act
+        christmasLights.toggleLightOnRange(831, 394, 904, 860);
+
+        // Assert
+        assertThat(christmasLights.getLightValueAt(831,394)).isEqualTo(0);
+        assertThat(christmasLights.getLightValueAt(904,860)).isEqualTo(0);
+    }
+
+    
 }
