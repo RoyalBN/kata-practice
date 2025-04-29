@@ -160,16 +160,86 @@ class ChristmasLightsTest {
         assertThat(christmasLights.getLightValueAt(952,908)).isEqualTo(0);
     }
 
+    @Test
+    @DisplayName("[OFF] Turn off a single light")
+    void should_turn_off_a_single_light() {
+        // Act & Assert
+        christmasLights.turnOffLightAt(1,1);
+        assertThat(christmasLights.getLightValueAt(1,1)).isEqualTo(0);
+    }
 
-    // [OFF] Turn off a single light
-    // [OFF] Turn off a single row of lights
-    // [OFF] Turn off a single column of lights
-    // [OFF] Turn off all lights
+    @Test
+    @DisplayName("[OFF] Turn off a single row of lights")
+    void should_turn_off_a_single_row_of_lights() {
+        // Act & Assert
+        christmasLights.turnOffLightOnRange(0, 0, 0, 999);
 
-    // [OFF] Turn off from [539,243] through [559,965]
-    // [OFF] Turn off from [370,819] through [676,868]
-    // [OFF] Turn off from [145,40] through [370,997]
-    // [OFF] Turn off from [301,3] through [808,453]
+        assertThat(christmasLights.getLightValueAt(0,0)).isEqualTo(0);
+        assertThat(christmasLights.getLightValueAt(0,999)).isEqualTo(0);
+    }
+
+    @Test
+    @DisplayName("[OFF] Turn off a single column of lights")
+    void should_turn_off_a_single_column_of_lights() {
+        // Act & Assert
+        christmasLights.turnOffLightOnRange(0, 0, 999, 0);
+
+        assertThat(christmasLights.getLightValueAt(0,0)).isEqualTo(0);
+        assertThat(christmasLights.getLightValueAt(999,0)).isEqualTo(0);
+    }
+
+    @Test
+    @DisplayName("[OFF] Turn off all lights")
+    void should_turn_off_all_lights() {
+        // Act & Assert
+        christmasLights.turnOffLightOnRange(0, 0, 999, 999);
+
+        assertThat(christmasLights.getLightValueAt(0,0)).isEqualTo(0);
+        assertThat(christmasLights.getLightValueAt(0,999)).isEqualTo(0);
+        assertThat(christmasLights.getLightValueAt(999,0)).isEqualTo(0);
+        assertThat(christmasLights.getLightValueAt(999,999)).isEqualTo(0);
+    }
+
+    @Test
+    @DisplayName("[OFF] Turn off from [539,243] through [559,965]")
+    void should_turn_off_lights_from_range_539_243_through_559_965() {
+        // Act & Assert
+        christmasLights.turnOffLightOnRange(539, 243, 559, 965);
+
+        assertThat(christmasLights.getLightValueAt(539,243)).isEqualTo(0);
+        assertThat(christmasLights.getLightValueAt(559,965)).isEqualTo(0);
+    }
+
+    @Test
+    @DisplayName("[OFF] Turn off from [370,819] through [676,868]")
+    void should_turn_off_lights_from_range_370_819_through_676_868() {
+        // Act & Assert
+        christmasLights.turnOffLightOnRange(370, 819, 676, 868);
+
+        assertThat(christmasLights.getLightValueAt(370,819)).isEqualTo(0);
+        assertThat(christmasLights.getLightValueAt(676,868)).isEqualTo(0);
+    }
+
+    @Test
+    @DisplayName("[OFF] Turn off from [145,40] through [370,997]")
+    void should_turn_off_lights_from_range_145_40_through_370_997() {
+        // Act & Assert
+        christmasLights.turnOffLightOnRange(145, 40, 370, 997);
+
+        assertThat(christmasLights.getLightValueAt(145,40)).isEqualTo(0);
+        assertThat(christmasLights.getLightValueAt(370,997)).isEqualTo(0);
+    }
+
+    @Test
+    @DisplayName("[OFF] Turn off from [301,3] through [808,453]")
+    void should_turn_off_lights_from_range_301_3_through_808_453() {
+        // Act & Assert
+        christmasLights.turnOffLightOnRange(301, 3, 808, 453);
+
+        assertThat(christmasLights.getLightValueAt(301,3)).isEqualTo(0);
+        assertThat(christmasLights.getLightValueAt(808,453)).isEqualTo(0);
+    }
+
 
     // [TOGGLE] Toggle a single light
     // [TOGGLE] Toggle a single row of lights

@@ -29,8 +29,12 @@ public class Grid {
         return grid[row][column];
     }
 
-    public void setLightValueAt(int row, int column) {
+    public void turnOnLightAt(int row, int column) {
         grid[row][column] = 1;
+    }
+
+    public void turnOffLightAt(int row, int column) {
+        grid[row][column] = 0;
     }
 
     public void turnOnLightOnRange(int beginRow, int beginColumn, int endRow, int endColumn) {
@@ -40,4 +44,13 @@ public class Grid {
             }
         }
     }
+
+    public void turnOffLightOnRange(int beginRow, int beginColumn, int endRow, int endColumn) {
+        for (int i = beginRow; i <= endRow; i++) {
+            for (int j = beginColumn; j <= endColumn; j++) {
+                grid[i][j] = 0;
+            }
+        }
+    }
+
 }

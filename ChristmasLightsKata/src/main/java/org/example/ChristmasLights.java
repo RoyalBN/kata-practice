@@ -20,10 +20,18 @@ public class ChristmasLights {
     }
 
     public void turnOnLightAt(int row, int column) {
-        grid.setLightValueAt(row, column);
+        grid.turnOnLightAt(row, column);
+    }
+
+    public void turnOffLightAt(int row, int column) {
+        grid.turnOffLightAt(row, column);
     }
 
     public void turnOnLightOnRange(int beginRow, int beginColumn, int endRow, int endColumn) {
         grid.turnOnLightOnRange(beginRow, beginColumn, endRow, endColumn);
+    }
+
+    public void turnOffLightOnRange(int beginRow, int beginColumn, int endRow, int endColumn) {
+        grid.turnOffLightOnRange(beginRow, beginColumn, endRow, endColumn);
     }
 }
