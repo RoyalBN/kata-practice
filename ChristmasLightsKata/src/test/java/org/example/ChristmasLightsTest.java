@@ -15,6 +15,19 @@ import static org.assertj.core.api.Assertions.assertThat;
  *      .....           .....
  *      [0,999] .....  [999,999]
  *
+ *  - Concrete exemple of th grid :
+ *
+ *         column 0   column 1   column 2   column 3
+ *       +----------+----------+----------+----------+
+ *  row 0| (0,0)    | (0,1)    | (0,2)    | (0,3)    |
+ *       +----------+----------+----------+----------+
+ *  row 1| (1,0)    | (1,1)    | (1,2)    | (1,3)    |
+ *       +----------+----------+----------+----------+
+ *  row 2| (2,0)    | (2,1)    | (2,2)    | (2,3)    |
+ *       +----------+----------+----------+----------+
+ *  row 3| (3,0)    | (3,1)    | (3,2)    | (3,3)    |
+ *       +----------+----------+----------+----------+
+ *
  *  - Each coordinate pair represents opposite corners of a rectangle, inclusive
  *  /!| The lights all start turned off.
  *
@@ -84,7 +97,7 @@ class ChristmasLightsTest {
     @DisplayName("[ON] Turn on a single column of lights")
     void should_turn_on_a_single_column_of_lights() {
         // Act & Assert
-        christmasLights.turnOnLightOnRange(0, 999, 0, 0);
+        christmasLights.turnOnLightOnRange(0, 0, 999, 0);
 
         // First column --> value = 1
         assertThat(christmasLights.getLightValueAt(0,0)).isEqualTo(1);
@@ -99,7 +112,7 @@ class ChristmasLightsTest {
     @DisplayName("[ON] Turn on all lights")
     void should_turn_on_all_lights() {
         // Act & Assert
-        christmasLights.turnOnLightOnRange(0, 999, 0, 999);
+        christmasLights.turnOnLightOnRange(0, 0, 999, 999);
 
         assertThat(christmasLights.getLightValueAt(0,0)).isEqualTo(1);
         assertThat(christmasLights.getLightValueAt(0,999)).isEqualTo(1);
@@ -107,14 +120,64 @@ class ChristmasLightsTest {
         assertThat(christmasLights.getLightValueAt(999,999)).isEqualTo(1);
     }
 
+    @Test
+    @DisplayName("[ON] Turn on lights from [887,9] through [959,629]")
+    void should_turn_on_lights_from_range_887_9_through_959_629() {
+        // Act & Assert
+        christmasLights.turnOnLightOnRange(887, 9, 959, 629);
+
+        assertThat(christmasLights.getLightValueAt(887,9)).isEqualTo(1);
+        assertThat(christmasLights.getLightValueAt(959,629)).isEqualTo(1);
+
+        assertThat(christmasLights.getLightValueAt(886,9)).isEqualTo(0);
+        assertThat(christmasLights.getLightValueAt(960,629)).isEqualTo(0);
+    }
+
+
+    @Test
+    @DisplayName("[ON] Turn on lights from [454,398] through [844,448]")
+    void should_turn_on_lights_from_range_454_398_through_844_448() {
+        // Act & Assert
+        christmasLights.turnOnLightOnRange(454, 398, 844, 448);
+
+        assertThat(christmasLights.getLightValueAt(454,398)).isEqualTo(1);
+        assertThat(christmasLights.getLightValueAt(844,448)).isEqualTo(1);
+
+        assertThat(christmasLights.getLightValueAt(453,398)).isEqualTo(0);
+        assertThat(christmasLights.getLightValueAt(845,448)).isEqualTo(0);
+    }
+
+    @Test
+    @DisplayName("[ON] Turn on from [351,678] through [951,908]")
+    void should_turn_on_lights_from_range_351_678_through_951_908() {
+        // Act & Assert
+        christmasLights.turnOnLightOnRange(351, 678, 951, 908);
+
+        assertThat(christmasLights.getLightValueAt(351,678)).isEqualTo(1);
+        assertThat(christmasLights.getLightValueAt(951,908)).isEqualTo(1);
+
+        assertThat(christmasLights.getLightValueAt(350,678)).isEqualTo(0);
+        assertThat(christmasLights.getLightValueAt(952,908)).isEqualTo(0);
+    }
+
+
     // [OFF] Turn off a single light
     // [OFF] Turn off a single row of lights
     // [OFF] Turn off a single column of lights
     // [OFF] Turn off all lights
 
+    // [OFF] Turn off from [539,243] through [559,965]
+    // [OFF] Turn off from [370,819] through [676,868]
+    // [OFF] Turn off from [145,40] through [370,997]
+    // [OFF] Turn off from [301,3] through [808,453]
+
     // [TOGGLE] Toggle a single light
     // [TOGGLE] Toggle a single row of lights
     // [TOGGLE] Toggle a single column of lights
     // [TOGGLE] Toggle all lights
+
+    // [TOGGLE] Toggle from [720,196] through [897,994]
+    // [TOGGLE] Toggle from [831,394] through [904,860]
+
 
 }

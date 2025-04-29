@@ -33,7 +33,7 @@ public class Grid {
         grid[row][column] = 1;
     }
 
-    public void turnOnLightOnRange(int beginRow, int endRow, int beginColumn, int endColumn) {
+    public void turnOnLightOnRange(int beginRow, int beginColumn, int endRow, int endColumn) {
         for (int i = beginRow; i <= endRow; i++) {
             for (int j = beginColumn; j <= endColumn; j++) {
                 grid[i][j] = 1;

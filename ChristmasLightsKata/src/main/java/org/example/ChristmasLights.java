@@ -23,7 +23,7 @@ public class ChristmasLights {
         grid.setLightValueAt(row, column);
     }
 
-    public void turnOnLightOnRange(int beginRow, int endRow, int beginColumn, int endColumn) {
-        grid.turnOnLightOnRange(beginRow, endRow, beginColumn, endColumn);
+    public void turnOnLightOnRange(int beginRow, int beginColumn, int endRow, int endColumn) {
+        grid.turnOnLightOnRange(beginRow, beginColumn, endRow, endColumn);
     }
 }
