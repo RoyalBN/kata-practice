@@ -3,7 +3,6 @@ package org.example.adapter.out.persistence;
 import org.example.adapter.out.persistence.mapper.BankAccountMapper;
 import org.example.domain.model.AccountType;
 import org.example.domain.model.BankAccount;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,10 +28,6 @@ class BankAccountPersistenceAdapterTest {
 
     @InjectMocks
     private BankAccountPersistenceAdapter adapter;
-
-    @BeforeEach
-    void setUp() {
-    }
 
     @Test
     @DisplayName("Save successfully and return domain object")

@@ -52,8 +52,8 @@ class BankAccountTest {
     }
 
     @Test
-    @DisplayName("[CURRENT] Withdrawal amount is added to balance")
-    void should_decrease_balance_with_valid_current_account_withdrawal() {
+    @DisplayName("[CURRENT] Withdrawal within balance limit")
+    void should_decrease_balance_by_withdrawal_amount_within_balance_limit_for_current_account() {
         // Act & Assert
         currentAccount.withdraw(new BigDecimal(500));
         assertThat(currentAccount.getBalance()).isEqualTo(new BigDecimal(500));
@@ -104,9 +104,19 @@ class BankAccountTest {
     @Test
     @DisplayName("[OVERDRAFT] Withdraw amount when not exceeding overdraft limit")
     void should_allow_withdrawal_within_overdraft_limit_for_current_account() {
-        // Act & Assert
-        currentAccount.withdraw(new BigDecimal(500));
-        assertThat(currentAccount.getBalance()).isEqualTo(new BigDecimal(500));
+        // Arrange
+        BigDecimal initialBalance = new BigDecimal(1000);
+        BigDecimal overdraftLimit = new BigDecimal(500);
+        BigDecimal withdrawalAmount = new BigDecimal(1200);
+
+        // Act
+        currentAccount.withdraw(withdrawalAmount);
+
+        // Assert
+        BigDecimal expectedBalance = initialBalance.subtract(withdrawalAmount);
+        assertThat(currentAccount.getBalance()).isEqualTo(expectedBalance);
+        assertThat(currentAccount.getBalance()).isLessThan(BigDecimal.ZERO);
+        assertThat(currentAccount.getBalance()).isGreaterThanOrEqualTo(overdraftLimit.negate());
     }
 
     @Test
