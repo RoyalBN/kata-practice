@@ -8,5 +8,5 @@ import java.util.UUID;
 
 public interface BankAccountUseCase {
     BankAccount createAccount(AccountType accountType, BigDecimal balance, BigDecimal overdraftLimit);
-    void withdraw(UUID accountId, BigDecimal amount);
+    BankAccount withdraw(UUID accountId, BigDecimal amount);
 }

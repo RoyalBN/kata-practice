@@ -1,5 +1,6 @@
 package org.example.application.service;
 
+import org.example.application.exception.AccountNotFoundException;
 import org.example.domain.model.AccountType;
 import org.example.domain.model.BankAccount;
 import org.example.domain.port.out.BankAccountRepository;
@@ -34,8 +35,8 @@ class BankAccountServiceTest {
 
     @BeforeEach
     void setUp() {
-        currentAccount = new BankAccount(AccountType.CURRENT, new BigDecimal(1000), BigDecimal.ZERO);
-        savingAccount = new BankAccount(AccountType.SAVINGS, new BigDecimal(1000), BigDecimal.ZERO);
+        currentAccount = new BankAccount(UUID.randomUUID(), AccountType.CURRENT, new BigDecimal(1000), BigDecimal.ZERO);
+        savingAccount = new BankAccount(UUID.randomUUID(), AccountType.SAVINGS, new BigDecimal(1000), BigDecimal.ZERO);
         bankAccountService = new BankAccountService(bankAccountRepository);
     }
 
@@ -45,7 +46,7 @@ class BankAccountServiceTest {
         when(bankAccountRepository.save(any(BankAccount.class))).thenReturn(currentAccount);
 
         // Act
-        BankAccount account = bankAccountService.createAccount(AccountType.CURRENT, new BigDecimal(1000), BigDecimal.ZERO);
+        BankAccount account = bankAccountService.createAccount(AccountType.CURRENT, new BigDecimal(1000), new BigDecimal(500));
 
         // Assert
         assertThat(account.getAccountId()).isNotNull();
@@ -60,12 +61,13 @@ class BankAccountServiceTest {
         when(bankAccountRepository.save(any(BankAccount.class))).thenReturn(savingAccount);
 
         // Act
-        BankAccount account = bankAccountService.createAccount(AccountType.SAVINGS, new BigDecimal(1000), BigDecimal.ZERO);
+        BankAccount account = bankAccountService.createAccount(AccountType.SAVINGS, new BigDecimal(1000), new BigDecimal(500));
 
         // Assert
         assertThat(account.getAccountId()).isNotNull();
         assertThat(account.getAccountType()).isEqualTo(AccountType.SAVINGS);
         assertThat(account.getBalance()).isEqualTo(new BigDecimal(1000));
+        assertThat(account.getOverdraftLimit()).isEqualTo(BigDecimal.ZERO);
         verify(bankAccountRepository, times(1)).save(any(BankAccount.class));
     }
 
@@ -81,7 +83,7 @@ class BankAccountServiceTest {
 
         // Assert
         assertThat(thrown)
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(AccountNotFoundException.class)
                 .hasMessage("Le compte n'a pas été trouvé");
     }
 

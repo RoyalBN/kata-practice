@@ -1,5 +1,6 @@
 package org.example.application.service;
 
+import org.example.application.exception.AccountNotFoundException;
 import org.example.domain.model.AccountType;
 import org.example.domain.model.BankAccount;
 import org.example.domain.port.in.BankAccountUseCase;
@@ -20,18 +21,17 @@ public class BankAccountService implements BankAccountUseCase {
 
     @Override
     public BankAccount createAccount(AccountType accountType, BigDecimal balance, BigDecimal overdraftLimit) {
-        BankAccount account = new BankAccount(accountType, balance, overdraftLimit);
+        UUID newAccountId = UUID.randomUUID();
+        BankAccount account = new BankAccount(newAccountId, accountType, balance, overdraftLimit);
         return bankAccountRepository.save(account);
     }
 
     @Override
-    public void withdraw(UUID accountId, BigDecimal amount) {
+    public BankAccount withdraw(UUID accountId, BigDecimal amount) {
         BankAccount account = bankAccountRepository.findByAccountId(accountId)
-                .orElseThrow(() -> new IllegalArgumentException("Le compte n'a pas été trouvé"));
+                .orElseThrow(() -> new AccountNotFoundException("Le compte n'a pas été trouvé"));
 
-        account.withdraw(accountId, amount);
-        bankAccountRepository.save(account);
+        account.withdraw(amount);
+        return bankAccountRepository.save(account);
     }
-
-
 }

@@ -38,44 +38,64 @@ class BankAccountControllerTest {
     @DisplayName("Create a new bank account for current")
     void should_create_a_new_bank_account_for_current() throws Exception {
         // Arrange
-        CreateBankAccountRequest request = new CreateBankAccountRequest(AccountType.CURRENT, new BigDecimal(1000), new BigDecimal(200));
-        BankAccount bankAccount = new BankAccount(AccountType.CURRENT, new BigDecimal(1000), new BigDecimal(200));
-
-        when(bankAccountUseCase.createAccount(AccountType.CURRENT, new BigDecimal(1000), new BigDecimal(200)))
-                .thenReturn(bankAccount);
+        CreateBankAccountRequest request = new CreateBankAccountRequest(
+                AccountType.CURRENT,
+                new BigDecimal("1000"),
+                new BigDecimal("200")
+        );
+        BankAccount bankAccount = new BankAccount(
+                UUID.randomUUID(),
+                AccountType.CURRENT,
+                new BigDecimal("1000"),
+                new BigDecimal("200"));
+        when(bankAccountUseCase.createAccount(
+                AccountType.CURRENT,
+                new BigDecimal("1000"),
+                new BigDecimal("200")
+        )).thenReturn(bankAccount);
 
         // Act & Assert
         mockMvc.perform(post("/api/accounts/create")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.accountId").exists())
                 .andExpect(jsonPath("$.accountType").value("CURRENT"))
-                .andExpect(jsonPath("$.balance").value(1000.00))
-                .andExpect(jsonPath("$.overdraftLimit").value(200.00));
+                .andExpect(jsonPath("$.balance").value(1000));
 
-        verify(bankAccountUseCase, times(1)).createAccount(AccountType.CURRENT, new BigDecimal(1000), new BigDecimal(200));
+        verify(bankAccountUseCase, times(1))
+                .createAccount(AccountType.CURRENT, new BigDecimal("1000"), new BigDecimal("200"));
     }
+
 
     @Test
     @DisplayName("Create a new bank account for savings")
     void should_create_a_new_bank_account_for_savings() throws Exception {
         // Arrange
-        CreateBankAccountRequest createRequest = new CreateBankAccountRequest(AccountType.SAVINGS, new BigDecimal(1000), new BigDecimal(200));
-        BankAccount bankAccount = new BankAccount(AccountType.SAVINGS, new BigDecimal(1000), new BigDecimal(200));
-
-        when(bankAccountUseCase.createAccount(AccountType.SAVINGS, new BigDecimal(1000), new BigDecimal(200)))
-                .thenReturn(bankAccount);
+        CreateBankAccountRequest request = new CreateBankAccountRequest(
+                AccountType.SAVINGS,
+                new BigDecimal("1000"),
+                new BigDecimal("200")
+        );
+        BankAccount bankAccount = new BankAccount(
+                UUID.randomUUID(),
+                AccountType.SAVINGS,
+                new BigDecimal("1000"),
+                new BigDecimal("200"));
+        when(bankAccountUseCase.createAccount(
+                AccountType.SAVINGS,
+                new BigDecimal("1000"),
+                new BigDecimal("200")
+        )).thenReturn(bankAccount);
 
         // Act & Assert
         mockMvc.perform(post("/api/accounts/create")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(createRequest)))
-                .andExpect(status().isOk())
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.accountId").exists())
                 .andExpect(jsonPath("$.accountType").value("SAVINGS"))
-                .andExpect(jsonPath("$.balance").value(1000.00))
-                .andExpect(jsonPath("$.overdraftLimit").value(200.00));
-
-        verify(bankAccountUseCase, times(1)).createAccount(AccountType.SAVINGS, new BigDecimal(1000), new BigDecimal(200));
+                .andExpect(jsonPath("$.balance").value(1000));
     }
 
     @Test
@@ -84,13 +104,20 @@ class BankAccountControllerTest {
         // Arrange
         UUID accountId = UUID.randomUUID();
         WithdrawRequest withdrawRequest = new WithdrawRequest(new BigDecimal(100));
-        BankAccount currentAccount = new BankAccount(AccountType.CURRENT, new BigDecimal(1000), new BigDecimal(200));
+        BankAccount updatedAccount = new BankAccount(UUID.randomUUID(), AccountType.CURRENT, new BigDecimal(900), new BigDecimal(200));
+
+        when(bankAccountUseCase.withdraw(accountId, new BigDecimal(100))).thenReturn(updatedAccount);
 
         // Act & Assert
         mockMvc.perform(post("/api/accounts/{accountId}/withdraw", accountId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(withdrawRequest)))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accountId").exists())
+                .andExpect(jsonPath("$.accountType").value("CURRENT"))
+                .andExpect(jsonPath("$.balance").value(900))
+                .andExpect(jsonPath("$.overdraftLimit").value(200));
+
 
         verify(bankAccountUseCase, times(1)).withdraw(accountId, new BigDecimal(100));
     }
@@ -101,13 +128,19 @@ class BankAccountControllerTest {
         // Arrange
         UUID accountId = UUID.randomUUID();
         WithdrawRequest withdrawRequest = new WithdrawRequest(new BigDecimal(100));
-        BankAccount savingAccount = new BankAccount(AccountType.SAVINGS, new BigDecimal(1000), new BigDecimal(200));
+        BankAccount updatedAccount = new BankAccount(UUID.randomUUID(), AccountType.SAVINGS, new BigDecimal(1000), BigDecimal.ZERO);
+
+        when(bankAccountUseCase.withdraw(accountId, new BigDecimal(100))).thenReturn(updatedAccount);
 
         // Act & Assert
         mockMvc.perform(post("/api/accounts/{accountId}/withdraw", accountId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(withdrawRequest)))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accountId").exists())
+                .andExpect(jsonPath("$.accountType").value("SAVINGS"))
+                .andExpect(jsonPath("$.balance").value(1000))
+                .andExpect(jsonPath("$.overdraftLimit").value(BigDecimal.ZERO));
 
         verify(bankAccountUseCase, times(1)).withdraw(accountId, new BigDecimal(100));
     }

@@ -11,7 +11,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import javax.swing.text.html.Option;
 import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.UUID;
@@ -39,7 +38,7 @@ class BankAccountPersistenceAdapterTest {
     @DisplayName("Save successfully and return domain object")
     void should_return_domain_object_when_saving_to_entity() {
         // Arrange
-        BankAccount domainAccount = new BankAccount(AccountType.CURRENT, new BigDecimal(100), BigDecimal.ZERO);
+        BankAccount domainAccount = new BankAccount(UUID.randomUUID(), AccountType.CURRENT, new BigDecimal(100), BigDecimal.ZERO);
         BankAccountEntity entity = new BankAccountEntity();
 
         when(mapper.toEntity(domainAccount)).thenReturn(entity);
@@ -59,7 +58,7 @@ class BankAccountPersistenceAdapterTest {
     void should_return_domain_object_when_account_by_id_is_found() {
         // Arrange
         UUID accountId = UUID.randomUUID();
-        BankAccount domainAccount = new BankAccount(AccountType.CURRENT, new BigDecimal(100), BigDecimal.ZERO);
+        BankAccount domainAccount = new BankAccount(UUID.randomUUID(), AccountType.CURRENT, new BigDecimal(100), BigDecimal.ZERO);
         BankAccountEntity entity = new BankAccountEntity();
 
         when(springRepo.findById(accountId)).thenReturn(Optional.of(entity));
