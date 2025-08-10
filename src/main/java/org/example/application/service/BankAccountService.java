@@ -29,7 +29,7 @@ public class BankAccountService implements BankAccountUseCase {
     @Override
     public BankAccount withdraw(UUID accountId, BigDecimal amount) {
         BankAccount account = bankAccountRepository.findByAccountId(accountId)
-                .orElseThrow(() -> new AccountNotFoundException("Le compte n'a pas été trouvé"));
+                .orElseThrow(() -> new AccountNotFoundException("Account not found with id: " + accountId));
 
         account.withdraw(amount);
         return bankAccountRepository.save(account);

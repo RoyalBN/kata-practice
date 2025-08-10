@@ -21,7 +21,9 @@ public class BankAccountPersistenceAdapter implements BankAccountRepository {
 
     @Override
     public BankAccount save(BankAccount bankAccount) {
-        return mapper.toDomain(springRepo.save(mapper.toEntity(bankAccount)));
+        BankAccountEntity entity = mapper.toEntity(bankAccount);
+        BankAccountEntity savedEntity = springRepo.save(entity);
+        return mapper.toDomain(savedEntity);
     }
 
     @Override

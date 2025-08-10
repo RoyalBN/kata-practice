@@ -23,7 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(BankAccountController.class)
-class BankAccountControllerTest {
+class  BankAccountControllerTest {
 
     @Autowired
     private MockMvc mockMvc;

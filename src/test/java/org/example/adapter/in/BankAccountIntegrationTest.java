@@ -38,65 +38,57 @@ class BankAccountIntegrationTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Autowired
-    private SpringDataBankAccountRepository repository;
-
-    private UUID createAccount(AccountType type, BigDecimal balance, BigDecimal overdraft) throws Exception {
-        var request = new CreateBankAccountRequest(type, balance, overdraft);
+    private CreateBankAccountResponse createAccount(AccountType type, String balance, String overdraft) throws Exception {
+        CreateBankAccountRequest request = new CreateBankAccountRequest(
+                type,
+                new BigDecimal(balance),
+                new BigDecimal(overdraft)
+        );
 
         MvcResult result = mockMvc.perform(post("/api/accounts/create")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.accountId").exists())
+                .andExpect(jsonPath("$.accountType").value(type.name()))
+                .andExpect(jsonPath("$.balance").value(new BigDecimal(balance)))
                 .andReturn();
 
-        return objectMapper.readValue(result.getResponse().getContentAsString(), CreateBankAccountResponse.class).accountId();
+        return objectMapper.readValue(result.getResponse().getContentAsString(), CreateBankAccountResponse.class);
     }
 
-    @Test
-    @DisplayName("Create and withdraw from current account with overdraft limit")
-    void should_create_and_withdraw_from_a_current_account() throws Exception {
-        // 1. Create account
-        CreateBankAccountRequest createAccountRequest = new CreateBankAccountRequest(
-                AccountType.CURRENT,
-                new BigDecimal("1000"),
-                new BigDecimal("200")
-        );
+    private BankAccountResponse withdraw(UUID accountId, String amount) throws Exception {
+        WithdrawRequest request = new WithdrawRequest(new BigDecimal(amount));
 
-        MvcResult accountCreatedResult = mockMvc.perform(post("/api/accounts/create")
+        MvcResult result = mockMvc.perform(post("/api/accounts/{accountId}/withdraw", accountId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(createAccountRequest)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.accountId").exists())
-                .andExpect(jsonPath("$.accountType").value("CURRENT"))
-                .andExpect(jsonPath("$.balance").value(1000))
-                .andReturn();
-
-        CreateBankAccountResponse accountCreatedResponse = objectMapper.readValue(accountCreatedResult.getResponse().getContentAsString(), CreateBankAccountResponse.class);
-        UUID accountId = accountCreatedResponse.accountId();
-
-        // 2. Withdraw
-        WithdrawRequest withdrawRequest = new WithdrawRequest(new BigDecimal("100"));
-
-        MvcResult withdrawResult = mockMvc.perform(post("/api/accounts/{accountId}/withdraw", accountId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(withdrawRequest)))
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andReturn();
 
-        BankAccountResponse withdrawResponse = objectMapper.readValue(withdrawResult.getResponse().getContentAsString(), BankAccountResponse.class);
-
-        // 3. Verify balance
-        assertThat(withdrawResponse.balance()).isEqualTo(new BigDecimal("900"));
-        assertThat(accountCreatedResponse.accountId()).isEqualTo(withdrawResponse.accountId());
-        assertThat(accountCreatedResponse.accountType()).isEqualTo(withdrawResponse.accountType());
-        assertThat(accountCreatedResponse.overdraftLimit()).isEqualTo(withdrawResponse.overdraftLimit());
+        return objectMapper.readValue(result.getResponse().getContentAsString(), BankAccountResponse.class);
     }
 
-    // Create and withdraw from savings account
+
     @Test
-    @DisplayName("Create and withdraw from savings account")
-    void should_create_and_withdraw_from_a_savings_account() throws Exception {
+    @DisplayName("[201] Create and withdraw from current account with overdraft limit")
+    void should_create_and_withdraw_from_a_current_account() throws Exception {
+        // 1. Create account
+        CreateBankAccountResponse account = createAccount(AccountType.CURRENT, "1000", "200");
+
+        // 2. Withdraw
+        BankAccountResponse afterWithdraw = withdraw(account.accountId(), "100");
+
+        // 3. Verify
+        assertThat(afterWithdraw.balance()).isEqualTo(new BigDecimal("900"));
+        assertThat(afterWithdraw.accountId()).isEqualTo(account.accountId());
+        assertThat(afterWithdraw.accountType()).isEqualTo(account.accountType());
+        assertThat(afterWithdraw.overdraftLimit()).isEqualTo(account.overdraftLimit());
+    }
+
+    @Test
+    @DisplayName("[201] Create and withdraw from savings account")
+    void should_create_savings_account_and_withdraw_successfully() throws Exception {
         // 1. Create account
         CreateBankAccountRequest createAccountRequest = new CreateBankAccountRequest(
                 AccountType.SAVINGS,
@@ -134,53 +126,28 @@ class BankAccountIntegrationTest {
         assertThat(accountCreatedResponse.overdraftLimit()).isEqualTo(withdrawResponse.overdraftLimit());
     }
 
-    // Withdraw from current account within overdraft limit
     @Test
-    @DisplayName("Allow withdrawal from current account within overdraft limit")
+    @DisplayName("[201] Allow withdrawal from current account within overdraft limit")
     void should_allow_overdraft_limit_when_withdrawing_from_current_account() throws Exception {
         // 1. Create account
-        CreateBankAccountRequest createAccountRequest = new CreateBankAccountRequest(
-                AccountType.CURRENT,
-                new BigDecimal("1000"),
-                new BigDecimal("200")
-        );
-
-        MvcResult accountCreatedResult = mockMvc.perform(post("/api/accounts/create")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(createAccountRequest)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.accountId").exists())
-                .andExpect(jsonPath("$.accountType").value("CURRENT"))
-                .andExpect(jsonPath("$.balance").value(1000))
-                .andReturn();
-
-        CreateBankAccountResponse accountCreatedResponse = objectMapper.readValue(accountCreatedResult.getResponse().getContentAsString(), CreateBankAccountResponse.class);
-        UUID accountId = accountCreatedResponse.accountId();
+        CreateBankAccountResponse account = createAccount(AccountType.CURRENT, "1000", "200");
 
         // 2. Withdraw
-        WithdrawRequest withdrawRequest = new WithdrawRequest(new BigDecimal("1100"));
+        BankAccountResponse afterWithdraw = withdraw(account.accountId(), "1100");
 
-        MvcResult withdrawResult = mockMvc.perform(post("/api/accounts/{accountId}/withdraw", accountId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(withdrawRequest)))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        BankAccountResponse withdrawResponse = objectMapper.readValue(withdrawResult.getResponse().getContentAsString(), BankAccountResponse.class);
-
-        // 3. Verify balance
-        assertThat(withdrawResponse.balance()).isEqualTo(new BigDecimal("-100"));
-        assertThat(accountCreatedResponse.accountId()).isEqualTo(withdrawResponse.accountId());
-        assertThat(accountCreatedResponse.accountType()).isEqualTo(withdrawResponse.accountType());
-        assertThat(accountCreatedResponse.overdraftLimit()).isEqualTo(withdrawResponse.overdraftLimit());
+        // 3. Verify
+        assertThat(afterWithdraw.balance()).isEqualTo(new BigDecimal("-100"));
+        assertThat(afterWithdraw.accountId()).isEqualTo(account.accountId());
+        assertThat(afterWithdraw.accountType()).isEqualTo(account.accountType());
+        assertThat(afterWithdraw.overdraftLimit()).isEqualTo(account.overdraftLimit());
     }
 
     @Test
-    @DisplayName("Should return 400 when creating account with invalid request")
+    @DisplayName("[400] Should return 400 when creating account with invalid request")
     void should_fail_when_creating_account_with_invalid_request() throws Exception {
         // 1. Prepare invalid request
         CreateBankAccountRequest invalidRequest = new CreateBankAccountRequest(
-                null, // Type de compte invalide
+                null,
                 new BigDecimal("1000"),
                 new BigDecimal("200")
         );
@@ -193,45 +160,51 @@ class BankAccountIntegrationTest {
     }
 
     @Test
-    @DisplayName("Should return 400 when withdrawing with negative amount")
+    @DisplayName("[400] Should return 400 when withdrawing with negative amount")
     void should_fail_when_withdrawing_negative_amount() throws Exception {
-        // Création d'un compte
-        UUID accountId = createAccount(AccountType.CURRENT, new BigDecimal("1000"), new BigDecimal("200"));
+        // 1. Create account
+        CreateBankAccountResponse account = createAccount(AccountType.CURRENT, "1000", "200");
 
-        // Tentative de retrait avec un montant négatif
+        // 2. Prepare withdrawal request
         WithdrawRequest invalidWithdrawRequest = new WithdrawRequest(new BigDecimal("-100"));
 
-        mockMvc.perform(post("/api/accounts/{accountId}/withdraw", accountId)
+        // 3. Withdraw
+        mockMvc.perform(post("/api/accounts/{accountId}/withdraw", account.accountId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(invalidWithdrawRequest)))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
-    @DisplayName("Should return 422 when withdrawing amount exceeding balance and overdraft")
+    @DisplayName("[422] Should return 422 when withdrawing amount exceeding balance and overdraft")
     void should_fail_when_withdrawing_more_than_balance_plus_overdraft() throws Exception {
-        // 1. Create account with specific balance and overdraft
-        UUID accountId = createAccount(AccountType.CURRENT, new BigDecimal("1000"), new BigDecimal("200"));
+        // 1. Create account
+        CreateBankAccountResponse account = createAccount(AccountType.CURRENT, "1000", "200");
 
-        // 2. Prepare withdrawal request exceeding balance and overdraft
-        WithdrawRequest withdrawRequest = new WithdrawRequest(new BigDecimal("1201")); // 1000 + 200 = 1200 max
+        // 2. Prepare withdrawal request
+        WithdrawRequest withdrawRequest = new WithdrawRequest(new BigDecimal("1201"));
 
-        // 3. Withdraw exceeding balance and overdraft
-        MvcResult result = mockMvc.perform(post("/api/accounts/{accountId}/withdraw", accountId)
+        // 3. Withdraw
+        MvcResult result = mockMvc.perform(post("/api/accounts/{accountId}/withdraw", account.accountId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(withdrawRequest)))
                 .andExpect(status().isUnprocessableEntity())
                 .andReturn();
 
-        // 4. Verify error response
-        Map<String, String> response = objectMapper.readValue(result.getResponse().getContentAsString(),
-                new TypeReference<Map<String, String>>() {});
-        assertThat(response).containsKey("message");
-        assertThat(response.get("message")).isNotEmpty();
+        // 4. Verify
+        Map<String, String> response = objectMapper.readValue(
+                result.getResponse().getContentAsString(),
+                new TypeReference<>() {}
+        );
+        assertThat(response)
+                .containsKey("detail")
+                .extracting(map -> map.get("detail"))
+                .asString()
+                .isNotEmpty();
     }
 
     @Test
-    @DisplayName("Should return 404 when account not found for withdrawal")
+    @DisplayName("[404] Should return 404 when account not found for withdrawal")
     void should_fail_when_account_not_found() throws Exception {
         // 1. Prepare non-existent account ID
         UUID nonExistentAccountId = UUID.randomUUID();
@@ -247,11 +220,11 @@ class BankAccountIntegrationTest {
     }
 
     @Test
-    @DisplayName("Should return 400 when creating account with negative balance")
+    @DisplayName("[400] Should return 400 when creating account with negative balance")
     void should_fail_when_creating_account_with_negative_balance() throws Exception {
         CreateBankAccountRequest request = new CreateBankAccountRequest(
                 AccountType.CURRENT,
-                new BigDecimal("-100"), // Solde négatif
+                new BigDecimal("-100"),
                 new BigDecimal("200")
         );
 
@@ -262,7 +235,22 @@ class BankAccountIntegrationTest {
     }
 
     @Test
-    @DisplayName("Should return 400 when creating account with invalid JSON")
+    @DisplayName("[400] Should return 400 when creating account with negative overdraft limit")
+    void should_fail_when_creating_account_with_negative_overdraft_limit() throws Exception {
+        CreateBankAccountRequest request = new CreateBankAccountRequest(
+                AccountType.CURRENT,
+                new BigDecimal("1100"),
+                new BigDecimal("-200")
+        );
+
+        mockMvc.perform(post("/api/accounts/create")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("[400] Should return 400 when creating account with invalid JSON")
     void should_fail_when_creating_account_with_invalid_json() throws Exception {
         String invalidJson = "{ invalid: json }";
 
@@ -271,6 +259,5 @@ class BankAccountIntegrationTest {
                         .content(invalidJson))
                 .andExpect(status().isBadRequest());
     }
-
 
 }

@@ -48,7 +48,18 @@ class BankAccountTest {
         Throwable thrown = catchThrowable(() -> currentAccount.withdraw(new BigDecimal(-1)));
         assertThat(thrown)
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Le montant doit être supérieur à 0");
+                .hasMessage("Amount must be greater than 0 and not null for withdrawal");
+    }
+
+    @Test
+    @DisplayName("[CURRENT] Withdrawal amount cannot be null")
+    void should_throw_exception_if_withdrawal_amount_is_null_for_current_account() {
+        // Act & Assert
+        Throwable thrown = catchThrowable(() -> currentAccount.withdraw(null));
+        assertThat(thrown)
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Amount must be greater than 0 and not null for withdrawal");
+
     }
 
     @Test
@@ -66,7 +77,7 @@ class BankAccountTest {
         Throwable thrown = catchThrowable(() -> savingAccount.withdraw(new BigDecimal(-1)));
         assertThat(thrown)
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Le montant doit être supérieur à 0");
+                .hasMessage("Amount must be greater than 0 and not null for withdrawal");
     }
 
     @Test
@@ -76,7 +87,7 @@ class BankAccountTest {
         Throwable thrown = catchThrowable(() -> savingAccount.withdraw(new BigDecimal(2000)));
         assertThat(thrown)
                 .isInstanceOf(InvalidWithdrawalAmountException.class)
-                .hasMessage("Le montant dépasse le solde");
+                .hasMessage("Withdrawal amount cannot exceed balance for saving account");
     }
 
     @Test
@@ -126,7 +137,7 @@ class BankAccountTest {
         Throwable thrown = catchThrowable(() -> currentAccount.withdraw(new BigDecimal(2000)));
         assertThat(thrown)
                 .isInstanceOf(OverdraftLimitExceededException.class)
-                .hasMessage("Le montant dépasse la limite de découvert");
+                .hasMessage("Withdrawal amount exceeds overdraft limit for current account");
     }
 
 }

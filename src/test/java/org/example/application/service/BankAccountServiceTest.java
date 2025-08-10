@@ -84,9 +84,8 @@ class BankAccountServiceTest {
         // Assert
         assertThat(thrown)
                 .isInstanceOf(AccountNotFoundException.class)
-                .hasMessage("Le compte n'a pas été trouvé");
+                .hasMessage("Account not found with id: " + accountId);
     }
-
 
     @Test
     @DisplayName("Throw an exception if withdrawal amount is negative")
@@ -100,7 +99,7 @@ class BankAccountServiceTest {
         // Assert
         assertThat(thrown)
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Le montant doit être supérieur à 0");
+                .hasMessage("Amount must be greater than 0 and not null for withdrawal");
     }
 
     @Test

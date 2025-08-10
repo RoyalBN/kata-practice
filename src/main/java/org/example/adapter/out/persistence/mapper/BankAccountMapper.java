@@ -4,18 +4,11 @@ import org.example.adapter.out.persistence.BankAccountEntity;
 import org.example.domain.model.BankAccount;
 import org.springframework.stereotype.Component;
 
-import java.util.UUID;
-
 @Component
 public class BankAccountMapper {
 
     public BankAccountEntity toEntity(BankAccount domain) {
-        return new BankAccountEntity(
-                domain.getAccountId() != null ? domain.getAccountId() : UUID.randomUUID(),
-                domain.getAccountType(),
-                domain.getBalance(),
-                domain.getOverdraftLimit()
-        );
+        return new BankAccountEntity(domain.getAccountId(), domain.getAccountType(), domain.getBalance(), domain.getOverdraftLimit());
     }
 
     public BankAccount toDomain(BankAccountEntity entity) {

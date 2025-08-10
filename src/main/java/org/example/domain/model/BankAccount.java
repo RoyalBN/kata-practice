@@ -37,7 +37,7 @@ public class BankAccount {
 
     public void withdraw(BigDecimal amountToWithdraw) {
         if (amountToWithdraw == null || amountToWithdraw.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("Le montant doit être supérieur à 0");
+            throw new IllegalArgumentException("Amount must be greater than 0 and not null for withdrawal");
         }
 
         switch (accountType) {
@@ -49,13 +49,13 @@ public class BankAccount {
 
     public void validateWithdrawForCurrentAccount(BigDecimal amountToWithdraw){
         if (amountToWithdraw.compareTo(balance.add(overdraftLimit)) > 0) {
-            throw new OverdraftLimitExceededException("Le montant dépasse la limite de découvert");
+            throw new OverdraftLimitExceededException("Withdrawal amount exceeds overdraft limit for current account");
         }
     }
 
     public void validateWithdrawForSavingAccount(BigDecimal amountToWithdraw){
         if (amountToWithdraw.compareTo(balance) > 0) {
-            throw new InvalidWithdrawalAmountException("Le montant dépasse le solde");
+            throw new InvalidWithdrawalAmountException("Withdrawal amount cannot exceed balance for saving account");
         }
     }
 }
