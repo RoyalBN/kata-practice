@@ -3,8 +3,6 @@ package org.example;
 import org.example.models.Grid;
 import org.example.models.LightOperation;
 
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 public class Main {
     public static void main(String[] args) {
 
@@ -21,6 +19,6 @@ public class Main {
         christmasLights.applyOperationOnRange(720, 196, 897, 994, LightOperation.TOGGLE);
         christmasLights.applyOperationOnRange(831, 394, 904, 860, LightOperation.TOGGLE);
 
-        System.out.println("Number of lights on: " + christmasLights.countLights());
+        System.out.println("Total brightness of all lights combined: " + christmasLights.countBrightness());
     }
 }

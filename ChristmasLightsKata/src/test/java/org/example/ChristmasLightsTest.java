@@ -259,7 +259,7 @@ class ChristmasLightsTest {
         christmasLights.applyOperationAt(1,1, LightOperation.TOGGLE);
 
         // Assert
-        assertThat(christmasLights.getLightValueAt(1,1)).isEqualTo(0);
+        assertThat(christmasLights.getLightValueAt(1,1)).isEqualTo(3);
     }
 
     @Test
@@ -272,8 +272,8 @@ class ChristmasLightsTest {
         christmasLights.applyOperationOnRange(0, 0, 0, 999, LightOperation.TOGGLE);
 
         // Assert
-        assertThat(christmasLights.getLightValueAt(0,0)).isEqualTo(0);
-        assertThat(christmasLights.getLightValueAt(0,999)).isEqualTo(0);
+        assertThat(christmasLights.getLightValueAt(0,0)).isEqualTo(3);
+        assertThat(christmasLights.getLightValueAt(0,999)).isEqualTo(3);
     }
 
     @Test
@@ -286,28 +286,23 @@ class ChristmasLightsTest {
         christmasLights.applyOperationOnRange(0, 0, 999, 0, LightOperation.TOGGLE);
 
         // Assert
-        assertThat(christmasLights.getLightValueAt(0,0)).isEqualTo(0);
-        assertThat(christmasLights.getLightValueAt(999,0)).isEqualTo(0);
+        assertThat(christmasLights.getLightValueAt(0,0)).isEqualTo(3);
+        assertThat(christmasLights.getLightValueAt(999,0)).isEqualTo(3);
     }
 
     @Test
     @DisplayName("[TOGGLE] Toggle all lights")
     void should_toggle_all_lights() {
-        // Arrange
-        christmasLights.applyOperationOnRange(0, 0, 999, 999, LightOperation.ON);
-        assertThat(christmasLights.getLightValueAt(0,0)).isEqualTo(1);
-        assertThat(christmasLights.getLightValueAt(0,999)).isEqualTo(1);
-        assertThat(christmasLights.getLightValueAt(999,0)).isEqualTo(1);
-        assertThat(christmasLights.getLightValueAt(999,999)).isEqualTo(1);
-
-        // Act
+        // Arrange & Act
         christmasLights.applyOperationOnRange(0, 0, 999, 999, LightOperation.TOGGLE);
 
         // Assert
-        assertThat(christmasLights.getLightValueAt(0,0)).isEqualTo(0);
-        assertThat(christmasLights.getLightValueAt(0,999)).isEqualTo(0);
-        assertThat(christmasLights.getLightValueAt(999,0)).isEqualTo(0);
-        assertThat(christmasLights.getLightValueAt(999,999)).isEqualTo(0);
+        assertThat(christmasLights.getLightValueAt(0,0)).isEqualTo(2);
+        assertThat(christmasLights.getLightValueAt(0,999)).isEqualTo(2);
+        assertThat(christmasLights.getLightValueAt(999,0)).isEqualTo(2);
+        assertThat(christmasLights.getLightValueAt(999,999)).isEqualTo(2);
+
+        assertThat(christmasLights.countBrightness()).isEqualTo(2000000);
     }
 
     @Test
@@ -322,8 +317,8 @@ class ChristmasLightsTest {
         christmasLights.applyOperationOnRange(720, 196, 897, 994, LightOperation.TOGGLE);
 
         // Assert
-        assertThat(christmasLights.getLightValueAt(720,196)).isEqualTo(0);
-        assertThat(christmasLights.getLightValueAt(897,994)).isEqualTo(0);
+        assertThat(christmasLights.getLightValueAt(720,196)).isEqualTo(3);
+        assertThat(christmasLights.getLightValueAt(897,994)).isEqualTo(3);
     }
 
     @Test
@@ -338,8 +333,8 @@ class ChristmasLightsTest {
         christmasLights.applyOperationOnRange(831, 394, 904, 860, LightOperation.TOGGLE);
 
         // Assert
-        assertThat(christmasLights.getLightValueAt(831,394)).isEqualTo(0);
-        assertThat(christmasLights.getLightValueAt(904,860)).isEqualTo(0);
+        assertThat(christmasLights.getLightValueAt(831,394)).isEqualTo(3);
+        assertThat(christmasLights.getLightValueAt(904,860)).isEqualTo(3);
     }
 
     @Test

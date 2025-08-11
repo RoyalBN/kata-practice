@@ -31,7 +31,7 @@ public class ChristmasLights {
         return grid.getLightValueAt(row, column);
     }
 
-    public int countLights() {
-        return grid.countLights();
+    public int countBrightness() {
+        return grid.countBrightness();
     }
 }

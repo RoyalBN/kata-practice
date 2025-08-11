@@ -33,7 +33,7 @@ public class Grid implements GridInterface {
     }
 
     public void turnOnLightAt(int row, int column) {
-        grid[row][column] = 1;
+        grid[row][column] += 1;
     }
 
     public void turnOffLightAt(int row, int column) {
@@ -43,7 +43,7 @@ public class Grid implements GridInterface {
     public void turnOnLightOnRange(int beginRow, int beginColumn, int endRow, int endColumn) {
         for (int i = beginRow; i <= endRow; i++) {
             for (int j = beginColumn; j <= endColumn; j++) {
-                grid[i][j] = 1;
+                grid[i][j] += 1;
             }
         }
     }
@@ -51,19 +51,19 @@ public class Grid implements GridInterface {
     public void turnOffLightOnRange(int beginRow, int beginColumn, int endRow, int endColumn) {
         for (int i = beginRow; i <= endRow; i++) {
             for (int j = beginColumn; j <= endColumn; j++) {
-                grid[i][j] = 0;
+                grid[i][j] = grid[i][j] == 0 ? 0 : grid[i][j] - 1;
             }
         }
     }
 
     public void toggleLightAt(int row, int column) {
-        grid[row][column] = grid[row][column] == 1 ? 0 : 1;
+        grid[row][column] += 2;
     }
 
     public void toggleLightOnRange(int beginRow, int beginColumn, int endRow, int endColumn) {
         for (int i = beginRow; i <= endRow; i++) {
             for (int j = beginColumn; j <= endColumn; j++) {
-                grid[i][j] = grid[i][j] == 1 ? 0 : 1;
+                grid[i][j] += 2;
             }
         }
     }
@@ -104,13 +104,12 @@ public class Grid implements GridInterface {
         }
     }
 
-    public int countLights() {
+    @Override
+    public int countBrightness() {
         int count = 0;
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
-                if (grid[i][j] == 1) {
-                    count++;
-                }
+                count += grid[i][j];
             }
         }
         return count;
