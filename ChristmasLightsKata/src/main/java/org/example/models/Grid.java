@@ -32,7 +32,6 @@ public class Grid implements GridInterface {
         return grid[row][column];
     }
 
-
     public void turnOnLightAt(int row, int column) {
         grid[row][column] = 1;
     }
@@ -103,5 +102,17 @@ public class Grid implements GridInterface {
         if (operation == null) {
             throw new IllegalArgumentException("Unknown operation: null");
         }
+    }
+
+    public int countLights() {
+        int count = 0;
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
+                if (grid[i][j] == 1) {
+                    count++;
+                }
+            }
+        }
+        return count;
     }
 }

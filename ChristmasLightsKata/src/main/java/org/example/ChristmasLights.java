@@ -1,6 +1,5 @@
 package org.example;
 
-import org.example.models.Grid;
 import org.example.models.GridInterface;
 import org.example.models.LightOperation;
 
@@ -28,8 +27,11 @@ public class ChristmasLights {
         grid.applyOperationOnRange(beginRow, beginColumn, endRow, endColumn, operation);
     }
 
-
     public int getLightValueAt(int row, int column) {
         return grid.getLightValueAt(row, column);
+    }
+
+    public int countLights() {
+        return grid.countLights();
     }
 }
