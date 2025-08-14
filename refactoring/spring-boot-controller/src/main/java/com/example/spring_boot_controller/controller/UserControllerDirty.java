@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-public class UserController {
+public class UserControllerDirty {
 
     @Autowired
     private Connection connection; // ❌ Mauvaise pratique : dépendance directe à la DB
