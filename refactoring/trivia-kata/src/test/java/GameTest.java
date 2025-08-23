@@ -2,53 +2,64 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import uglytrivia.Game;
+import uglytrivia.TriviaGame;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class GameTest {
 
-    private Game game;
+    private TriviaGame game;
 
     @BeforeEach
     void setup() {
-        game = new Game();
+        game = new TriviaGame();
     }
 
+    @Test
+    @DisplayName("[PenaltyBox] In penalty box, roll odd number to get out")
+    void should_get_out_of_penalty_box_when_roll_is_odd() {
+        // Arrange
+        game.add("Chat");
+        game.add("Pat");
+        game.add("Pam");
+        game.add("Sue");
+        game.add("Sally");
+        game.add("Barry");
 
-    // [Roll] In penalty box, roll odd number to get out
-    //@Test
-    //@DisplayName("[Roll] In penalty box, roll odd number to get out")
-    //void should_get_out_of_penalty_box_when_roll_is_odd() {
-    //    // Arrange
-    //    game.add("Chat");
-    //    game.add("Pat");
-    //    game.add("Pam");
-    //    game.add("Sue");
-    //    game.add("Sally");
-    //    game.add("Barry");
-    //
-    //    // Act
-    //    game.roll(1);
-    //    game.wrongAnswer();
-    //    game.roll(2);
-    //    game.wrongAnswer();
-    //    game.roll(3);
-    //    game.wrongAnswer();
-    //    game.roll(4);
-    //    game.wrongAnswer();
-    //    game.roll(5);
-    //    game.wasCorrectlyAnswered();
-    //
-    //    // Assert
-    //
-    //}
+        // Act
+        for (int i = 0; i < 6; i++) {
+            game.roll(7);
+            game.wrongAnswer();
+        }
+        game.roll(7);
+        game.wasCorrectlyAnswered();
 
-    // [Roll] In penalty box, roll even number to stay
+        // Assert
+        assertThat(game.inPenaltyBox(0)).isFalse();
+    }
 
-    // [Roll] Not in penalty box, roll any number to move
+    @Test
+    @DisplayName("[PenaltyBox] In penalty box, roll even number to stay")
+    void should_stay_in_penalty_box_when_roll_is_even() {
+        // Arrange
+        game.add("Chat");
+        game.add("Pat");
+        game.add("Pam");
+        game.add("Sue");
+        game.add("Sally");
+        game.add("Barry");
+
+        // Act
+        for (int i = 0; i < 6; i++) {
+            game.roll(4);
+            game.wrongAnswer();
+        }
+
+        // Assert
+        assertThat(game.inPenaltyBox(0)).isTrue();
+    }
+
     @Test
     @DisplayName("[Roll] Not in penalty box, roll any number to move")
     void should_move_when_not_in_penalty_box() {
@@ -61,22 +72,118 @@ public class GameTest {
         game.add("Barry");
 
         // Act
-        game.roll(1);
-        game.wrongAnswer();
-        game.roll(2);
-        game.wrongAnswer();
-        game.roll(3);
-        game.wrongAnswer();
         game.roll(4);
-        game.wrongAnswer();
-        game.roll(5);
         game.wasCorrectlyAnswered();
 
         // Assert
-        assertThat(game.getPlace(0)).isEqualTo(1);
+        assertThat(game.getPlayer(0).getPlace()).isEqualTo(4);
+    }
 
+    @Test
+    @DisplayName("[Place] Move to place 4 when rolling 4")
+    void should_move_to_place_4_when_rolling_4() {
+        // Arrange
+        game.add("Chat");
+        game.add("Pat");
+        game.add("Pam");
+        game.add("Sue");
+        game.add("Sally");
+        game.add("Barry");
+
+        // Act
+        game.roll(4);
+        game.wasCorrectlyAnswered();
+
+        // Assert
+        assertThat(game.getPlayer(0).getPlace()).isEqualTo(4);
+    }
+
+    @Test
+    @DisplayName("[Place] Come back to place 0 when reaching place 12")
+    void should_reset_place_to_zero_when_reaching_place_12() {
+        // Arrange
+        game.add("Chat");
+        game.add("Pat");
+        game.add("Pam");
+        game.add("Sue");
+        game.add("Sally");
+        game.add("Barry");
+
+        // Act
+        for (int i = 0; i <= 12; i++) {
+            game.roll(4);
+            game.wasCorrectlyAnswered();
+        }
+
+        // Assert
+        assertThat(game.getPlayer(0).getPlace()).isZero();
+    }
+
+    @Test
+    @DisplayName("[Purse] Penalty Box & correct answer --> increase player's purse")
+    void should_increase_player_purse_when_in_penalty_box_and_correct_answer() {
+        // Arrange
+        game.add("Chat");
+        game.add("Pat");
+        game.add("Pam");
+        game.add("Sue");
+        game.add("Sally");
+        game.add("Barry");
+
+        // Act
+        game.roll(1);
+        game.wrongAnswer();
+
+        for (int i = 0; i <= 12; i++) {
+            game.roll(5);
+            game.wasCorrectlyAnswered();
+        }
+
+        // Assert
+        assertThat(game.getPurse(0)).isEqualTo(2);
 
     }
+
+    @Test
+    @DisplayName("[Purse] Not in penalty box & correct answer --> increase player's purse")
+    void should_increase_player_purse_when_not_in_penalty_box_and_correct_answer() {
+        // Arrange
+        game.add("Chat");
+        game.add("Pat");
+        game.add("Pam");
+        game.add("Sue");
+        game.add("Sally");
+        game.add("Barry");
+
+        // Act
+        for (int i = 0; i <= 12; i++) {
+            game.roll(5);
+            game.wasCorrectlyAnswered();
+        }
+
+        // Assert
+        assertThat(game.getPurse(0)).isEqualTo(3);
+    }
+
+    @Test
+    @DisplayName("[PenaltyBox] Wrong answer --> put player in penalty box")
+    void should_put_player_in_penalty_box_when_wrong_answer() {
+        // Arrange
+        game.add("Chat");
+        game.add("Pat");
+        game.add("Pam");
+        game.add("Sue");
+        game.add("Sally");
+        game.add("Barry");
+
+        // Act
+        game.roll(1);
+        game.wrongAnswer();
+
+        // Assert
+        assertThat(game.inPenaltyBox(0)).isTrue();
+    }
+
 
 
     /**
@@ -144,8 +251,6 @@ public class GameTest {
                 .hasMessage("A game cannot have more than 6 players");
     }
 
-    // [Game] Roll should be between 1 and 6
-
 
     /**
      * --------------------------------------------------------------------------------------
@@ -156,38 +261,28 @@ public class GameTest {
      * --------------------------------------------------------------------------------------
      */
 
-    // [Players] A player that gets into prison should get out
-    //@Tag("characterization")
-    //@Test
-    //@DisplayName("[Players] A player that gets into prison should get out")
-    //void should_get_out_of_prison() {
-    //    // Arrange
-    //    Game game = new Game();
-    //    game.add("Chat");
-    //    game.add("Pat");
-    //    game.add("Pam");
-    //    game.add("Sue");
-    //    game.add("Sally");
-    //    game.add("Barry");
-    //
-    //    // Act
-    //    game.roll(1);
-    //    game.wrongAnswer();
-    //    game.roll(2);
-    //    game.wrongAnswer();
-    //    game.roll(3);
-    //    game.wrongAnswer();
-    //    game.roll(4);
-    //    game.wrongAnswer();
-    //    game.roll(5);
-    //    game.wrongAnswer();
-    //    game.roll(6);
-    //    game.wrongAnswer();
-    //
-    //    // Assert
-    //    //assertThat(game.isGettingOutOfPenaltyBox()).isTrue();
-    //
-    //}
+    @Test
+    @DisplayName("[PenaltyBox] Right answer --> remove player from penalty box")
+    void should_remove_player_from_penalty_box_when_right_answer() {
+        // Arrange
+        game.add("Chat");
+        game.add("Pat");
+        game.add("Pam");
+        game.add("Sue");
+        game.add("Sally");
+        game.add("Barry");
+
+        // Act
+        for (int i = 0; i < 12; i++) {
+            game.roll(5);
+            game.wrongAnswer();
+        }
+        game.roll(5);
+        game.wasCorrectlyAnswered();
+
+        // Assert
+        assertThat(game.inPenaltyBox(0)).isFalse();
+    }
 
 
     /**

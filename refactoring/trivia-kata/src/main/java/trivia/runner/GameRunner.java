@@ -1,6 +1,6 @@
 package trivia.runner;
 
-import uglytrivia.Game;
+import uglytrivia.TriviaGame;
 
 import java.util.Random;
 
@@ -9,7 +9,7 @@ public class GameRunner {
     private static boolean notAWinner;
 
     public static void main(String[] args) {
-        Game aGame = new Game();
+        TriviaGame aGame = new TriviaGame();
 
         aGame.add("Chet");
         aGame.add("Pat");
