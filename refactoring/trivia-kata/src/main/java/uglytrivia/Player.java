@@ -8,13 +8,14 @@ import lombok.Data;
 public class Player {
     private String name;
     private int coins;
-    private int place;
+    private int position;
     private boolean inPenaltyBox;
+    private static final int MAX_COINS = 6;
 
-    public Player(String name, int coins, int place, boolean inPenaltyBox) {
+    public Player(String name, int coins, int position, boolean inPenaltyBox) {
         this.name = name;
         this.coins = coins;
-        this.place = place;
+        this.position = position;
         this.inPenaltyBox = inPenaltyBox;
     }
 
@@ -31,20 +32,7 @@ public class Player {
         this.inPenaltyBox = false;
     }
 
-    public int getPlayerPlace() {
-        return this.place;
+    public boolean hasWon() {
+        return coins == MAX_COINS;
     }
-
-    public void move(int roll, int boardSize) {
-        place += roll;
-        if (place >= boardSize) {
-            place -= boardSize;
-        }
-    }
-
-    public boolean hasWon(int maxCoins) {
-        return coins == maxCoins;
-    }
-
-
 }

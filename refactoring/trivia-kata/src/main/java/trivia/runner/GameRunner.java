@@ -6,7 +6,13 @@ import java.util.Random;
 
 public class GameRunner {
 
+    private final TriviaGame game;
+    private final Random random = new Random();
     private static boolean notAWinner;
+
+    public GameRunner(TriviaGame game) {
+        this.game = game;
+    }
 
     public static void main(String[] args) {
         TriviaGame aGame = new TriviaGame();
@@ -16,19 +22,16 @@ public class GameRunner {
         aGame.add("Sue");
 
         Random rand = new Random();
+        boolean gameContinues = true;
 
-        do {
-
+        while (gameContinues) {
             aGame.roll(rand.nextInt(5) + 1);
 
-            if (rand.nextInt(9) == 7) {
-                notAWinner = aGame.wrongAnswer();
-            } else {
-                notAWinner = aGame.wasCorrectlyAnswered();
-            }
+            gameContinues = (rand.nextInt(9) == 7)
+                    ? aGame.wrongAnswer()
+                    : aGame.wasCorrectlyAnswered();
+        }
 
-
-        } while (notAWinner);
 
     }
 }

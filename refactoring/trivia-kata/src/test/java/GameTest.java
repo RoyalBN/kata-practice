@@ -2,14 +2,21 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import uglytrivia.Board;
+import uglytrivia.PlayerManager;
+import uglytrivia.Questions;
 import uglytrivia.TriviaGame;
+import uglytrivia.enums.Categories;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class GameTest {
 
     private TriviaGame game;
+    private PlayerManager playerManager;
+    private Questions questions;
+    private Board board;
 
     @BeforeEach
     void setup() {
@@ -76,7 +83,7 @@ public class GameTest {
         game.wasCorrectlyAnswered();
 
         // Assert
-        assertThat(game.getPlayer(0).getPlace()).isEqualTo(4);
+        assertThat(game.getPlayer(0).getPosition()).isEqualTo(4);
     }
 
     @Test
@@ -95,7 +102,7 @@ public class GameTest {
         game.wasCorrectlyAnswered();
 
         // Assert
-        assertThat(game.getPlayer(0).getPlace()).isEqualTo(4);
+        assertThat(game.getPlayer(0).getPosition()).isEqualTo(4);
     }
 
     @Test
@@ -116,7 +123,7 @@ public class GameTest {
         }
 
         // Assert
-        assertThat(game.getPlayer(0).getPlace()).isZero();
+        assertThat(game.getPlayer(0).getPosition()).isZero();
     }
 
     @Test
@@ -293,7 +300,22 @@ public class GameTest {
      * --------------------------------------------------------------------------------------
      */
 
-    // [Deck] The deck cannot run out of questions
+    @Test
+    @DisplayName("[Deck] The deck cannot run out of questions")
+    void should_not_run_out_of_questions() {
+        // Arrange
+        game.add("Chat");
+        game.add("Pat");
+
+        // Act
+        for (int i = 0; i < 200; i++) {
+            game.roll(5);
+            game.wrongAnswer();
+        }
+
+        // Assert
+        assertThat(game.remainingQuestions(Categories.SCIENCE)).isGreaterThanOrEqualTo(0);
+    }
 
 
     /**
@@ -305,11 +327,64 @@ public class GameTest {
      * --------------------------------------------------------------------------------------
      */
 
+    @DisplayName("[Board] Every position has a valid category")
+    @Test
+    void should_have_valid_category_for_every_position() {
+        Board board = new Board();
+        Categories[] categories = Categories.values();
+
+        for (int pos = 0; pos < 2 * board.getBoardSize(); pos++) {
+            Categories category = board.getCategoryForPosition(pos);
+            assertNotNull(category, "Category should not be null for position " + pos);
+
+            assertTrue(
+                    java.util.Arrays.asList(categories).contains(category),
+                    "Category " + category + " must be in Categories enum"
+            );
+        }
+    }
+
+    @DisplayName("[Board] Category distribution cycles correctly")
+    @Test
+    void should_distribute_categories_correctly() {
+        Board board = new Board();
+        Categories[] categories = Categories.values();
+
+        for (int pos = 0; pos < categories.length * 3; pos++) {
+            Categories expected = categories[pos % categories.length];
+            Categories actual = board.getCategoryForPosition(pos);
+            assertEquals(expected, actual,
+                    "Expected " + expected + " but got " + actual + " at position " + pos);
+        }
+    }
 
     /**
      * --------------------------------------------------------------------------------------
      * BUG : Similarly changing the board size greatly affects the questions distribution
      * --------------------------------------------------------------------------------------
      */
+    @Test
+    @DisplayName("[Board] Changing board size does not affect questions distribution")
+    void should_not_affect_questions_distribution_when_board_size_is_changed() {
+        // Arrange
+        Board board = new Board();
+        int boardSize = 14;
+
+        // Act
+        for (int pos = 0; pos < boardSize; pos++) {
+            Categories category = board.getCategoryForPosition(pos);
+
+            // Check that category comes every 4 places
+            Categories expected = switch (pos % 4) {
+                case 0 -> Categories.POP;
+                case 1 -> Categories.SCIENCE;
+                case 2 -> Categories.SPORTS;
+                default -> Categories.ROCK;
+            };
+
+            // Assert
+            assertThat(category).isEqualTo(expected);
+        }
+    }
 
 }
