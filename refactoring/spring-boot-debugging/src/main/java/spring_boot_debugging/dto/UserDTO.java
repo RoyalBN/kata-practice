@@ -1,8 +1,18 @@
 package spring_boot_debugging.dto;
 
-public record UserDTO (
-    Long id,
-    String username,
-    String email,
-    Integer age
-) {}
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class UserDTO {
+    private Long id;
+    private String username;
+    private String email;
+    private Integer age;
+}
