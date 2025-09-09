@@ -4,15 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import spring_boot_debugging.dto.CreateUserRequest;
@@ -21,10 +17,13 @@ import spring_boot_debugging.model.User;
 import spring_boot_debugging.service.UserService2;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(UserControllerV2.class)
@@ -35,8 +34,8 @@ class UserControllerV2Test {
 
     private UserDTO user1;
     private UserDTO user2;
-    private CreateUserRequest createUserRequest;
-    private UserControllerV2 userController;
+    private CreateUserRequest validUserCreationRequest;
+    private CreateUserRequest invalidUserCreationRequest;
 
     @Autowired
     private MockMvc mockMvc;
@@ -49,7 +48,6 @@ class UserControllerV2Test {
 
     @BeforeEach
     void setUp() {
-        //userController = new UserControllerV2(userService2);
 
         user1 = UserDTO.builder()
                 .id(1L)
@@ -65,8 +63,16 @@ class UserControllerV2Test {
                 .age(22)
                 .build();
 
-        createUserRequest = CreateUserRequest.builder()
+        validUserCreationRequest = CreateUserRequest.builder()
                 .username("David")
+                .password("david-1234")
+                .email("david.doe@example.com")
+                .age(27)
+                .roles(List.of("USER"))
+                .build();
+
+        invalidUserCreationRequest = CreateUserRequest.builder()
+                .username("")
                 .password("david-1234")
                 .email("david.doe@example.com")
                 .age(27)
@@ -82,7 +88,7 @@ class UserControllerV2Test {
 
         mockMvc.perform(post(BASE_URL)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(createUserRequest)))
+                        .content(objectMapper.writeValueAsString(validUserCreationRequest)))
                 .andExpect(status().isCreated());
 
         verify(userService2, times(1)).createUser(any(CreateUserRequest.class));
@@ -91,30 +97,71 @@ class UserControllerV2Test {
     @Test
     @DisplayName("[POST] Create User --> 400 Bad Request")
     void should_return_400_bad_request_when_invalid_user_is_provided() throws Exception {
-        // Arrange
-        CreateUserRequest invalidUser = CreateUserRequest.builder()
-                .username("")
-                .password("david-1234")
-                .email("david.doe@example.com")
-                .age(27)
-                .roles(List.of("USER"))
-                .build();
-
-        // Act
+        // Act & Assert
         mockMvc.perform(post(BASE_URL)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(invalidUser))
+                .content(objectMapper.writeValueAsString(invalidUserCreationRequest))
         ).andExpect(status().isBadRequest());
 
-        // Assert
         verify(userService2, never()).createUser(any(CreateUserRequest.class));
     }
 
+    @Test
+    @DisplayName("[POST] Create User --> 500")
+    void should_return_500_when_exception_is_thrown() throws Exception{
+        // Arrange
+        when(userService2.createUser(any(CreateUserRequest.class)))
+                .thenThrow(new RuntimeException("Unexpected error"));
 
-    // [POST] Create User --> 500
+        // Act
+        mockMvc.perform(post(BASE_URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(validUserCreationRequest)))
+                .andExpect(status().isInternalServerError());
 
-    // [GET] Get User --> 200 OK
+        // Assert
+        verify(userService2, times(1)).createUser(any(CreateUserRequest.class));
+
+    }
+
+    @Test
+    @DisplayName("[GET] Get User --> 200 OK")
+    void should_return_user_with_status_200_ok_when_user_exists() throws Exception{
+        // Arrange
+        Long userId = 1L;
+        when(userService2.getUserById(userId)).thenReturn(user1);
+
+        // Act
+        mockMvc.perform(get(BASE_URL + "/" + userId)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.id").value(userId))
+                .andExpect(jsonPath("$.username").value(user1.getUsername()))
+                .andExpect(jsonPath("$.email").value(user1.getEmail()))
+                .andExpect(jsonPath("$.age").value(user1.getAge()))
+                .andExpect(status().isOk());
+
+        // Assert
+        verify(userService2, times(1)).getUserById(userId);
+    }
+
     // [GET] Get User --> 404 Not Found
+    @Test
+    @DisplayName("[GET] Get User --> 404 Not Found")
+    void should_return_status_404_not_found_when_user_does_not_exist() throws Exception{
+        // Arrange
+        Long nonExistingUserId = 100L;
+        doThrow(new UsernameNotFoundException("User with id " + nonExistingUserId + " not found"))
+                .when(userService2).getUserById(nonExistingUserId);
+
+        // Act
+        mockMvc.perform(get(BASE_URL + "/" + nonExistingUserId)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+
+        // Assert
+        verify(userService2, times(1)).getUserById(nonExistingUserId);
+
+    }
 
     // [GET] Get All Users --> 200 OK
     // [GET] Get All Users --> 404 Not Found

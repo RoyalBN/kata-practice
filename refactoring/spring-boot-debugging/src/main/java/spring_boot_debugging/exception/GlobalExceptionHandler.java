@@ -1,6 +1,7 @@
 package spring_boot_debugging.exception;
 
 import org.springframework.http.*;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -15,15 +16,6 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
-
-    //@ExceptionHandler(MethodArgumentNotValidException.class)
-    //@ResponseStatus(HttpStatus.BAD_REQUEST)
-    //public ProblemDetail handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
-    //    ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
-    //    problemDetail.setDetail("Bad Request");
-    //    problemDetail.setDetail(ex.getMessage());
-    //    return problemDetail;
-    //}
 
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(
@@ -47,6 +39,16 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.badRequest().body(problemDetail);
     }
 
+    @ExceptionHandler(UsernameNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ProblemDetail handleUsernameNotFoundException(UsernameNotFoundException ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
+        problemDetail.setTitle("User Not Found");
+        problemDetail.setDetail(ex.getMessage());
+        return problemDetail;
+    }
+
+
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ProblemDetail handleAllExceptions(Exception ex, WebRequest request) {
@@ -56,18 +58,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return problemDetail;
     }
 
-    // Problème : Gestion trop générique des exceptions
-    //@ExceptionHandler(Exception.class)
-    //public final ResponseEntity<ErrorDetails> handleAllExceptions(Exception ex, WebRequest request) {
-    //    // Problème : Exposition des détails de l'exception dans la réponse
-    //    ErrorDetails errorDetails = new ErrorDetails(
-    //            new Date(),
-    //            ex.getMessage(),
-    //            request.getDescription(false),
-    //            ex.toString()  // Problème : Exposition de la stack trace
-    //    );
-    //    return new ResponseEntity<>(errorDetails, HttpStatus.INTERNAL_SERVER_ERROR);
-    //}
+
+
+
+
+
 
     // Problème : Pas de gestion spécifique pour les erreurs 404
     // Problème : Pas de gestion des erreurs de validation
