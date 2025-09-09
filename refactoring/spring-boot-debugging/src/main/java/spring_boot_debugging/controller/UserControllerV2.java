@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import spring_boot_debugging.dto.CreateUserRequest;
+import spring_boot_debugging.dto.UpdateUserRequest;
 import spring_boot_debugging.dto.UserDTO;
 import spring_boot_debugging.model.User;
 import spring_boot_debugging.service.UserService;
@@ -20,7 +21,7 @@ public class UserControllerV2 {
 
     private final UserService2 userService2;
 
-    public UserControllerV2 (UserService2 userService2) {
+    public UserControllerV2(UserService2 userService2) {
         this.userService2 = userService2;
     }
 
@@ -39,6 +40,15 @@ public class UserControllerV2 {
     @GetMapping
     public ResponseEntity<List<UserDTO>> getAllUsers() {
         return ResponseEntity.ok(userService2.getAllUsers());
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<UserDTO> updateUser(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateUserRequest updateUserRequest
+    ) {
+        UserDTO updatedUser = userService2.updateUser(id, updateUserRequest);
+        return ResponseEntity.ok(updatedUser);
     }
 
 }

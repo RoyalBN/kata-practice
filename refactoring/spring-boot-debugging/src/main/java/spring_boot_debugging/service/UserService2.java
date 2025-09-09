@@ -3,6 +3,7 @@ package spring_boot_debugging.service;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import spring_boot_debugging.dto.CreateUserRequest;
+import spring_boot_debugging.dto.UpdateUserRequest;
 import spring_boot_debugging.dto.UserDTO;
 import spring_boot_debugging.model.User;
 import spring_boot_debugging.repository.UserRepository2;
@@ -60,5 +61,27 @@ public class UserService2 {
                 .age(user.getAge())
                 .build())
                 .toList();
+    }
+
+    public UserDTO updateUser(Long userId, UpdateUserRequest updateUserRequest) {
+        User foundUser = userRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("User with id " + userId + " not found"));
+
+        User userToUpdate = User.builder()
+                .id(foundUser.getId())
+                .username(updateUserRequest.getUsername())
+                .email(updateUserRequest.getEmail())
+                .age(updateUserRequest.getAge())
+                .roles(foundUser.getRoles())
+                .build();
+
+        User userUpdated = userRepository.save(userToUpdate);
+
+        return UserDTO.builder()
+                .id(userUpdated.getId())
+                .username(userUpdated.getUsername())
+                .email(userUpdated.getEmail())
+                .age(userUpdated.getAge())
+                .build();
     }
 }

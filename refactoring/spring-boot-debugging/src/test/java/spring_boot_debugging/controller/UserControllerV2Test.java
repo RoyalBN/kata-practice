@@ -12,14 +12,15 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import spring_boot_debugging.dto.CreateUserRequest;
+import spring_boot_debugging.dto.UpdateUserRequest;
 import spring_boot_debugging.dto.UserDTO;
 import spring_boot_debugging.service.UserService2;
 
 import java.util.List;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -168,6 +169,7 @@ class UserControllerV2Test {
         // Act
         mockMvc.perform(get(BASE_URL)
                 .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$", hasSize(2)))
                 .andExpect(jsonPath("$.[0].id").value(user1.getId()))
                 .andExpect(jsonPath("$.[0].username").value(user1.getUsername()))
                 .andExpect(jsonPath("$.[0].email").value(user1.getEmail()))
@@ -182,8 +184,66 @@ class UserControllerV2Test {
         verify(userService2, times(1)).getAllUsers();
     }
 
-    // [PUT] Update User --> 200 OK
-    // [PUT] Update User --> 404 Not Found
+    @Test
+    @DisplayName("[PUT] Update User --> 200 OK")
+    void should_update_user_and_return_status_200_ok() throws Exception {
+        // Arrange
+        Long userId = 1L;
+        UpdateUserRequest updateUserRequest = UpdateUserRequest.builder()
+                .username("david")
+                .email("david.doe@example.com")
+                .age(30)
+                .build();
+
+        UserDTO updatedUserResponse = UserDTO.builder()
+                .id(userId)
+                .username("david")
+                .email("david.doe@example.com")
+                .age(30)
+                .build();
+
+        when(userService2.updateUser(userId, updateUserRequest)).thenReturn(updatedUserResponse);
+
+        // Act
+        mockMvc.perform(put(BASE_URL + "/" + userId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updateUserRequest))
+                )
+                .andExpect(jsonPath("$.id").value(userId))
+                .andExpect(jsonPath("$.username").value("david"))
+                .andExpect(jsonPath("$.email").value("david.doe@example.com"))
+                .andExpect(jsonPath("$.age").value(30))
+                .andExpect(status().isOk());
+
+        // Assert
+        verify(userService2, times(1)).updateUser(userId, updateUserRequest);
+    }
+
+    @Test
+    @DisplayName("[PUT] Update User --> 404 Not Found")
+    void should_return_404_not_found_when_user_does_not_exist() throws Exception {
+        // Arrange
+        Long nonExistingUserId = 100L;
+        UpdateUserRequest updateUserRequest = UpdateUserRequest.builder()
+                .username("david")
+                .email("david.doe@example.com")
+                .age(30)
+                .build();
+
+        when(userService2.updateUser(nonExistingUserId, updateUserRequest))
+                .thenThrow(new UsernameNotFoundException("User with id " + nonExistingUserId + " not found"));
+
+        // Act
+        mockMvc.perform(put(BASE_URL + "/" + nonExistingUserId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updateUserRequest))
+                )
+                .andExpect(jsonPath("$.title").value("User Not Found"))
+                .andExpect(status().isNotFound());
+
+        // Assert
+        verify(userService2, times(1)).updateUser(nonExistingUserId, updateUserRequest);
+    }
 
     // [DELETE] Delete User --> 200 OK
     // [DELETE] Delete User --> 400 Bad Request
