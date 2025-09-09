@@ -245,9 +245,51 @@ class UserControllerV2Test {
         verify(userService2, times(1)).updateUser(nonExistingUserId, updateUserRequest);
     }
 
-    // [DELETE] Delete User --> 200 OK
-    // [DELETE] Delete User --> 400 Bad Request
-    // [DELETE] Delete User --> 404 Not Found
+    @Test
+    @DisplayName("[DELETE] Delete User --> 204 No Content")
+    void should_delete_user_and_return_status_204_no_content() throws Exception {
+        // Arrange
+        Long userId = 1L;
 
+        // Act
+        mockMvc.perform(delete(BASE_URL + "/" + userId)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNoContent());
+
+        // Assert
+        verify(userService2, times(1)).deleteUserById(userId);
+    }
+
+    @Test
+    @DisplayName("[DELETE] Delete User --> 404 Not Found")
+    void should_return_status_400_not_found_when_user_is_not_found() throws Exception {
+        // Arrange
+        Long userId = 24L;
+        doThrow(new UsernameNotFoundException("User with id " + userId + " not found"))
+                .when(userService2).deleteUserById(userId);
+
+        // Act
+        mockMvc.perform(delete(BASE_URL + "/" + userId)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+
+        // Assert
+        verify(userService2, times(1)).deleteUserById(userId);
+    }
+
+    @Test
+    @DisplayName("[DELETE] Delete User --> 400 Bad Request")
+    void should_return_400_bad_request_when_id_invalid() throws Exception {
+        // Arrange
+        Long invalidUserId = -1L;
+
+        // Act
+        mockMvc.perform(delete(BASE_URL + "/" + invalidUserId)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+
+        // Assert
+        verify(userService2, never()).deleteUserById(invalidUserId);
+    }
 
 }

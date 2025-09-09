@@ -1,6 +1,7 @@
 package spring_boot_debugging.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -50,5 +51,13 @@ public class UserControllerV2 {
         UserDTO updatedUser = userService2.updateUser(id, updateUserRequest);
         return ResponseEntity.ok(updatedUser);
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUser(
+            @PathVariable @Positive(message = "Id must be positive") Long id) {
+        userService2.deleteUserById(id);
+        return ResponseEntity.noContent().build();
+    }
+
 
 }

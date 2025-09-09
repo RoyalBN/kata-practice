@@ -84,4 +84,10 @@ public class UserService2 {
                 .age(userUpdated.getAge())
                 .build();
     }
+
+    public void deleteUserById(Long userId) {
+        User foundUser = userRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("User with id " + userId + " not found"));
+        userRepository.delete(foundUser);
+    }
 }
