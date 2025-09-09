@@ -27,13 +27,14 @@ public class UserControllerV2 {
     }
 
     @PostMapping
-    public ResponseEntity<UserDTO> createUser(@Valid @RequestBody CreateUserRequest user) {
+    public ResponseEntity<UserDTO> createUser(@RequestBody @Valid CreateUserRequest user) {
         UserDTO createdUser = userService2.createUser(user);
         return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserDTO> getUserById(@PathVariable Long id) {
+    public ResponseEntity<UserDTO> getUserById(
+            @PathVariable @Positive(message = "Id must be positive") Long id) {
         UserDTO user = userService2.getUserById(id);
         return ResponseEntity.ok(user);
     }
@@ -45,8 +46,8 @@ public class UserControllerV2 {
 
     @PutMapping("/{id}")
     public ResponseEntity<UserDTO> updateUser(
-            @PathVariable Long id,
-            @Valid @RequestBody UpdateUserRequest updateUserRequest
+            @PathVariable @Positive(message = "Id must be positive") Long id,
+            @RequestBody @Valid UpdateUserRequest updateUserRequest
     ) {
         UserDTO updatedUser = userService2.updateUser(id, updateUserRequest);
         return ResponseEntity.ok(updatedUser);

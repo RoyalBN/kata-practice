@@ -161,6 +161,22 @@ class UserControllerV2Test {
     }
 
     @Test
+    @DisplayName("[GET] Get User --> 400 Bad Request")
+    void should_return_400_bad_request_when_id_is_invalid() throws Exception {
+        // Arrange
+        Long userId = -1L;
+
+        // Act
+        mockMvc.perform(get(BASE_URL + "/" + userId)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+
+        // Assert
+        verify(userService2, never()).getUserById(userId);
+    }
+
+
+    @Test
     @DisplayName("[GET] Get All Users --> 200 OK")
     void should_return_all_users_with_status_200_ok() throws Exception{
         // Arrange
@@ -244,6 +260,28 @@ class UserControllerV2Test {
         // Assert
         verify(userService2, times(1)).updateUser(nonExistingUserId, updateUserRequest);
     }
+
+    @Test
+    @DisplayName("[PUT] Update User --> 400 Bad Request")
+    void should_return_400_bad_request_when_update_with_invalid_id() throws Exception {
+        // Arrange
+        Long invalidUserId = -1L;
+        UpdateUserRequest updateUserRequest = UpdateUserRequest.builder()
+                .username("david")
+                .email("david.doe@example.com")
+                .age(30)
+                .build();
+
+        // Act
+        mockMvc.perform(put(BASE_URL + "/" + invalidUserId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updateUserRequest)))
+                .andExpect(status().isBadRequest());
+
+        // Assert
+        verify(userService2, never()).updateUser(invalidUserId, updateUserRequest);
+    }
+
 
     @Test
     @DisplayName("[DELETE] Delete User --> 204 No Content")
