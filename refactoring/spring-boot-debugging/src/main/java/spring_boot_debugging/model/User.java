@@ -33,8 +33,7 @@ public class User {
     
     @ElementCollection
     private List<String> roles;  // Problème : Pas de relation many-to-many avec une table de rôles
-    
-    @Transient
+
     private Integer age;  // Problème : Champ calculé non mis à jour
     
     // Problème : Pas de constructeur par défaut explicite

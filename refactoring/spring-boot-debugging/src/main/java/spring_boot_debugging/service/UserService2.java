@@ -7,6 +7,8 @@ import spring_boot_debugging.dto.UserDTO;
 import spring_boot_debugging.model.User;
 import spring_boot_debugging.repository.UserRepository2;
 
+import java.util.List;
+
 @Service
 public class UserService2 {
 
@@ -47,5 +49,16 @@ public class UserService2 {
                 .email(foundUser.getEmail())
                 .age(foundUser.getAge())
                 .build();
+    }
+
+    public List<UserDTO> getAllUsers() {
+        List<User> users = userRepository.findAll();
+        return users.stream().map(user -> UserDTO.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .age(user.getAge())
+                .build())
+                .toList();
     }
 }

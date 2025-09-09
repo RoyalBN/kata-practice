@@ -12,6 +12,7 @@ import spring_boot_debugging.service.UserService;
 import spring_boot_debugging.service.UserService2;
 
 import java.net.URI;
+import java.util.List;
 
 @RestController
 @RequestMapping("/v1/api/users")
@@ -35,6 +36,9 @@ public class UserControllerV2 {
         return ResponseEntity.ok(user);
     }
 
-
+    @GetMapping
+    public ResponseEntity<List<UserDTO>> getAllUsers() {
+        return ResponseEntity.ok(userService2.getAllUsers());
+    }
 
 }
