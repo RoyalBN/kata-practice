@@ -1,10 +1,10 @@
 package spring_boot_debugging.controller;
 
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import spring_boot_debugging.dto.CreateUserRequest;
 import spring_boot_debugging.dto.UserDTO;
 import spring_boot_debugging.service.UserService;
@@ -18,15 +18,14 @@ public class UserControllerV2 {
 
     private final UserService2 userService2;
 
-    private UserControllerV2 (UserService2 userService2) {
+    public UserControllerV2 (UserService2 userService2) {
         this.userService2 = userService2;
     }
 
     @PostMapping
-    public ResponseEntity<UserDTO> createUser(@RequestBody CreateUserRequest user) {
-        UserDTO created = userService2.createUser(user);
-        URI location = URI.create("/v1/api/users/" + created.getId());
-        return ResponseEntity.created(location).body(created);
+    public ResponseEntity<UserDTO> createUser(@Valid @RequestBody CreateUserRequest user) {
+        UserDTO createdUser = userService2.createUser(user);
+        return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
     }
 
 }
