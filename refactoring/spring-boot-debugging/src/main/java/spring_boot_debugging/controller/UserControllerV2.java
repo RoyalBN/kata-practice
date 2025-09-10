@@ -20,7 +20,7 @@ import spring_boot_debugging.service.UserService2;
 import java.util.List;
 
 @RestController
-@RequestMapping("/v1/api/users")
+@RequestMapping("/api/v2/users")
 public class UserControllerV2 {
 
     private final UserService2 userService2;

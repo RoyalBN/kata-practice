@@ -19,7 +19,7 @@ public interface UserRepository2 extends JpaRepository<User, Long> {
     Integer countByAgeGreaterThanEqual(int age);
 
     @EntityGraph(attributePaths = "roles")
-    List<User> findAllByRoles();
+    List<User> findAllByRoles(String role);
 
     Optional<User> findByEmail(String email);
 

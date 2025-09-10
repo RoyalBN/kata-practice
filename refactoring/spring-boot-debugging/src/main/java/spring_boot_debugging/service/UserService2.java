@@ -91,11 +91,11 @@ public class UserService2 {
     }
 
     public long countAllUsers() {
-        return userRepository.count();
+        return userRepository.findAll().size();
     }
 
     public Integer countAdultUsers() {
-        return userRepository.countByAgeGreaterThanEqual(18); // à implémenter
+        return userRepository.countByAgeGreaterThanEqual(18);
     }
 
     public Page<UserDTO> searchUser(String username, Pageable pageable) {

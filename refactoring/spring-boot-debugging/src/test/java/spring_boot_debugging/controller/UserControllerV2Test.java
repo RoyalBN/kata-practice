@@ -33,7 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc(addFilters = true)
 class UserControllerV2Test {
 
-    public static final String BASE_URL = "/v1/api/users";
+    public static final String BASE_URL = "/api/v2/users";
 
     private UserDTO user1;
     private UserDTO user2;
