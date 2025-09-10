@@ -25,13 +25,14 @@ public class User {
     
     @Column(nullable = false)
     private String password;  // Problème : Mot de passe en clair
-    
+
+    @Column(unique = true)
     private String email;
     
     @Column(name = "birth_date")
     private LocalDate birthDate;
     
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     private List<String> roles;  // Problème : Pas de relation many-to-many avec une table de rôles
 
     private Integer age;  // Problème : Champ calculé non mis à jour

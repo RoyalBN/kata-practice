@@ -90,4 +90,11 @@ public class UserService2 {
                 .orElseThrow(() -> new UsernameNotFoundException("User with id " + userId + " not found"));
         userRepository.delete(foundUser);
     }
+
+    public Long countAdultUsers() {
+        return getAllUsers()
+                .stream()
+                .filter(user -> user.getAge() >= 18)
+                .count();
+    }
 }

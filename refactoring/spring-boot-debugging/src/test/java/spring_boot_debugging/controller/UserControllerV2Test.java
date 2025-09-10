@@ -7,13 +7,16 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import spring_boot_debugging.dto.CreateUserRequest;
 import spring_boot_debugging.dto.UpdateUserRequest;
 import spring_boot_debugging.dto.UserDTO;
+import spring_boot_debugging.security.SecurityConfig;
 import spring_boot_debugging.service.UserService2;
 
 import java.util.List;
@@ -25,7 +28,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(UserControllerV2.class)
-@AutoConfigureMockMvc(addFilters = false)
+@Import(SecurityConfig.class)
+@AutoConfigureMockMvc(addFilters = true)
 class UserControllerV2Test {
 
     public static final String BASE_URL = "/v1/api/users";
@@ -66,7 +70,7 @@ class UserControllerV2Test {
                 .password("david-1234")
                 .email("david.doe@example.com")
                 .age(27)
-                .roles(List.of("USER"))
+                .roles(List.of("USER", "ADMIN"))
                 .build();
 
         invalidUserCreationRequest = CreateUserRequest.builder()
@@ -80,6 +84,7 @@ class UserControllerV2Test {
     }
 
     @Test
+    @WithMockUser(username = "user", roles = "USER")
     @DisplayName("[POST] Create User --> 201 OK")
     void should_create_user_successfully_when_valid_user_is_provided() throws Exception {
         when(userService2.createUser(any(CreateUserRequest.class))).thenReturn(user1);
@@ -93,6 +98,7 @@ class UserControllerV2Test {
     }
 
     @Test
+    @WithMockUser(username = "user", roles = "USER")
     @DisplayName("[POST] Create User --> 400 Bad Request")
     void should_return_400_bad_request_when_invalid_user_is_provided() throws Exception {
         // Act & Assert
@@ -105,6 +111,7 @@ class UserControllerV2Test {
     }
 
     @Test
+    @WithMockUser(username = "user", roles = "USER")
     @DisplayName("[POST] Create User --> 500")
     void should_return_500_when_exception_is_thrown() throws Exception{
         // Arrange
@@ -123,6 +130,7 @@ class UserControllerV2Test {
     }
 
     @Test
+    @WithMockUser(username = "user", roles = "USER")
     @DisplayName("[GET] Get User --> 200 OK")
     void should_return_user_with_status_200_ok_when_user_exists() throws Exception{
         // Arrange
@@ -143,6 +151,7 @@ class UserControllerV2Test {
     }
 
     @Test
+    @WithMockUser(username = "user", roles = "USER")
     @DisplayName("[GET] Get User --> 404 Not Found")
     void should_return_status_404_not_found_when_user_does_not_exist() throws Exception{
         // Arrange
@@ -161,6 +170,7 @@ class UserControllerV2Test {
     }
 
     @Test
+    @WithMockUser(username = "user", roles = "USER")
     @DisplayName("[GET] Get User --> 400 Bad Request")
     void should_return_400_bad_request_when_id_is_invalid() throws Exception {
         // Arrange
@@ -177,6 +187,7 @@ class UserControllerV2Test {
 
 
     @Test
+    @WithMockUser(username = "user", roles = "USER")
     @DisplayName("[GET] Get All Users --> 200 OK")
     void should_return_all_users_with_status_200_ok() throws Exception{
         // Arrange
@@ -201,6 +212,7 @@ class UserControllerV2Test {
     }
 
     @Test
+    @WithMockUser(username = "user", roles = "USER")
     @DisplayName("[PUT] Update User --> 200 OK")
     void should_update_user_and_return_status_200_ok() throws Exception {
         // Arrange
@@ -236,6 +248,7 @@ class UserControllerV2Test {
     }
 
     @Test
+    @WithMockUser(username = "user", roles = "USER")
     @DisplayName("[PUT] Update User --> 404 Not Found")
     void should_return_404_not_found_when_user_does_not_exist() throws Exception {
         // Arrange
@@ -262,6 +275,7 @@ class UserControllerV2Test {
     }
 
     @Test
+    @WithMockUser(username = "user", roles = "USER")
     @DisplayName("[PUT] Update User --> 400 Bad Request")
     void should_return_400_bad_request_when_update_with_invalid_id() throws Exception {
         // Arrange
@@ -284,6 +298,7 @@ class UserControllerV2Test {
 
 
     @Test
+    @WithMockUser(username = "user", roles = "USER")
     @DisplayName("[DELETE] Delete User --> 204 No Content")
     void should_delete_user_and_return_status_204_no_content() throws Exception {
         // Arrange
@@ -299,6 +314,7 @@ class UserControllerV2Test {
     }
 
     @Test
+    @WithMockUser(username = "user", roles = "USER")
     @DisplayName("[DELETE] Delete User --> 404 Not Found")
     void should_return_status_400_not_found_when_user_is_not_found() throws Exception {
         // Arrange
@@ -316,6 +332,7 @@ class UserControllerV2Test {
     }
 
     @Test
+    @WithMockUser(username = "user", roles = "USER")
     @DisplayName("[DELETE] Delete User --> 400 Bad Request")
     void should_return_400_bad_request_when_id_invalid() throws Exception {
         // Arrange
@@ -328,6 +345,59 @@ class UserControllerV2Test {
 
         // Assert
         verify(userService2, never()).deleteUserById(invalidUserId);
+    }
+
+    // [GET] Search User --> 200 OK
+    // [GET] Search User --> 401 Unauthorized
+    // [GET] Search User --> 404 Not Found
+    // [GET] Search User --> 400 Bad Request
+
+
+    @Test
+    @WithMockUser(username = "admin", roles = "ADMIN")
+    @DisplayName("[GET] Users Statistics --> 200 OK")
+    void should_return_users_statistics_and_status_200_ok_when_user_is_admin() throws Exception {
+        // Arrange
+        when(userService2.getAllUsers()).thenReturn(List.of(user1, user2));
+        when(userService2.countAdultUsers()).thenReturn(2L);
+
+        // Act & Assert
+        mockMvc.perform(get(BASE_URL + "/stats")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalUsers").value(2))
+                .andExpect(jsonPath("$.adultUsers").value(2))
+                .andExpect(jsonPath("$.adultUsersPercentage").isNumber());
+
+        // Assert
+        verify(userService2, times(1)).getAllUsers();
+        verify(userService2, times(1)).countAdultUsers();
+    }
+
+    // [GET] Users Statistics --> 401 Unauthorized
+    @Test
+    @DisplayName("[GET] Users Statistics --> 401 Unauthorized")
+    void should_return_status_401_unauthorized_when_user_is_not_authenticated() throws Exception {
+        // Act & Assert
+        mockMvc.perform(get(BASE_URL + "/stats")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized());
+
+        verify(userService2, never()).getAllUsers();
+        verify(userService2, never()).countAdultUsers();
+    }
+
+    @Test
+    @WithMockUser(username = "user", roles = "USER")
+    @DisplayName("[GET] Users Statistics --> 403 Forbidden")
+    void should_return_status_403_forbidden_when_user_is_not_admin() throws Exception {
+        // Act & Assert
+        mockMvc.perform(get(BASE_URL + "/stats")
+                    .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isForbidden());
+
+        verify(userService2, never()).getAllUsers();
+        verify(userService2, never()).countAdultUsers();
     }
 
 }

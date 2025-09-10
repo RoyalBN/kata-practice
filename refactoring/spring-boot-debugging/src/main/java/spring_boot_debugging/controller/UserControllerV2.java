@@ -5,10 +5,12 @@ import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import spring_boot_debugging.dto.CreateUserRequest;
 import spring_boot_debugging.dto.UpdateUserRequest;
 import spring_boot_debugging.dto.UserDTO;
+import spring_boot_debugging.dto.UserStatisticsResponse;
 import spring_boot_debugging.model.User;
 import spring_boot_debugging.service.UserService;
 import spring_boot_debugging.service.UserService2;
@@ -26,12 +28,14 @@ public class UserControllerV2 {
         this.userService2 = userService2;
     }
 
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @PostMapping
     public ResponseEntity<UserDTO> createUser(@RequestBody @Valid CreateUserRequest user) {
         UserDTO createdUser = userService2.createUser(user);
         return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
     }
 
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<UserDTO> getUserById(
             @PathVariable @Positive(message = "Id must be positive") Long id) {
@@ -39,11 +43,13 @@ public class UserControllerV2 {
         return ResponseEntity.ok(user);
     }
 
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @GetMapping
     public ResponseEntity<List<UserDTO>> getAllUsers() {
         return ResponseEntity.ok(userService2.getAllUsers());
     }
 
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<UserDTO> updateUser(
             @PathVariable @Positive(message = "Id must be positive") Long id,
@@ -53,6 +59,7 @@ public class UserControllerV2 {
         return ResponseEntity.ok(updatedUser);
     }
 
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(
             @PathVariable @Positive(message = "Id must be positive") Long id) {
@@ -60,5 +67,20 @@ public class UserControllerV2 {
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/stats")
+    public ResponseEntity<UserStatisticsResponse> getUserStatistics() {
+        long totalUsers = userService2.getAllUsers().size();
+        long adultUsers = userService2.countAdultUsers();
+        double adultUsersPercentage = totalUsers > 0 ? (adultUsers * 100.0) / totalUsers : 0;
+
+        UserStatisticsResponse userStatisticsResponse = UserStatisticsResponse.builder()
+                .totalUsers(totalUsers)
+                .adultUsers(adultUsers)
+                .adultUsersPercentage(adultUsersPercentage)
+                .build();
+
+        return ResponseEntity.ok(userStatisticsResponse);
+    }
 
 }
