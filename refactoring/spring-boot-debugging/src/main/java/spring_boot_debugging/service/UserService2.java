@@ -10,8 +10,6 @@ import spring_boot_debugging.dto.UserDTO;
 import spring_boot_debugging.model.User;
 import spring_boot_debugging.repository.UserRepository2;
 
-import java.util.List;
-
 @Service
 public class UserService2 {
 
@@ -54,15 +52,14 @@ public class UserService2 {
                 .build();
     }
 
-    public List<UserDTO> getAllUsers() {
-        List<User> users = userRepository.findAll();
-        return users.stream().map(user -> UserDTO.builder()
+    public Page<UserDTO> getAllUsers(Pageable pageable) {
+        Page<User> users = userRepository.findAll(pageable);
+        return users.map(user -> UserDTO.builder()
                 .id(user.getId())
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .age(user.getAge())
-                .build())
-                .toList();
+                .build());
     }
 
     public UserDTO updateUser(Long userId, UpdateUserRequest updateUserRequest) {
@@ -93,11 +90,12 @@ public class UserService2 {
         userRepository.delete(foundUser);
     }
 
-    public Long countAdultUsers() {
-        return getAllUsers()
-                .stream()
-                .filter(user -> user.getAge() >= 18)
-                .count();
+    public long countAllUsers() {
+        return userRepository.count();
+    }
+
+    public Integer countAdultUsers() {
+        return userRepository.countByAgeGreaterThanEqual(18); // à implémenter
     }
 
     public Page<UserDTO> searchUser(String username, Pageable pageable) {

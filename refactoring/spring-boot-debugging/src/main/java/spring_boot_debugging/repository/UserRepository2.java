@@ -14,10 +14,12 @@ import java.util.Optional;
 public interface UserRepository2 extends JpaRepository<User, Long> {
     Optional<User> findByUsername(@Param("username") String username);
     Page<User> findByUsernameContaining(String username, Pageable pageable);
+    Page<User> findAll(Pageable pageable);
     List<User> findByEmailIsNotNull();
+    Integer countByAgeGreaterThanEqual(int age);
 
     @EntityGraph(attributePaths = "roles")
-    List<User> findAll();
+    List<User> findAllByRoles();
 
     Optional<User> findByEmail(String email);
 

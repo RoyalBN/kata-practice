@@ -46,8 +46,13 @@ public class UserControllerV2 {
 
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @GetMapping
-    public ResponseEntity<List<UserDTO>> getAllUsers() {
-        return ResponseEntity.ok(userService2.getAllUsers());
+    public ResponseEntity<Page<UserDTO>> getAllUsers(
+            @RequestParam(defaultValue = "0")  int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<UserDTO> users = userService2.getAllUsers(pageable);
+        return ResponseEntity.ok(users);
     }
 
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
@@ -82,7 +87,7 @@ public class UserControllerV2 {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/stats")
     public ResponseEntity<UserStatisticsResponse> getUserStatistics() {
-        long totalUsers = userService2.getAllUsers().size();
+        long totalUsers = userService2.countAllUsers();
         long adultUsers = userService2.countAdultUsers();
         double adultUsersPercentage = totalUsers > 0 ? (adultUsers * 100.0) / totalUsers : 0;
 

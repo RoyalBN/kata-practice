@@ -192,24 +192,28 @@ class UserControllerV2Test {
     @DisplayName("[GET] Get All Users --> 200 OK")
     void should_return_all_users_with_status_200_ok() throws Exception{
         // Arrange
-        when(userService2.getAllUsers()).thenReturn(List.of(user1, user2));
+        Page<UserDTO> page = new PageImpl<>(List.of(user1, user2));
+        when(userService2.getAllUsers(any(Pageable.class))).thenReturn(page);
 
         // Act
         mockMvc.perform(get(BASE_URL)
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$.[0].id").value(user1.getId()))
-                .andExpect(jsonPath("$.[0].username").value(user1.getUsername()))
-                .andExpect(jsonPath("$.[0].email").value(user1.getEmail()))
-                .andExpect(jsonPath("$.[0].age").value(user1.getAge()))
-                .andExpect(jsonPath("$.[1].id").value(user2.getId()))
-                .andExpect(jsonPath("$.[1].username").value(user2.getUsername()))
-                .andExpect(jsonPath("$.[1].email").value(user2.getEmail()))
-                .andExpect(jsonPath("$.[1].age").value(user2.getAge()))
+                .contentType(MediaType.APPLICATION_JSON)
+                        .param("page", "0")
+                        .param("size", "10")
+                )
+                .andExpect(jsonPath("$.content", hasSize(2)))
+                .andExpect(jsonPath("$.content.[0].id").value(user1.getId()))
+                .andExpect(jsonPath("$.content.[0].username").value(user1.getUsername()))
+                .andExpect(jsonPath("$.content.[0].email").value(user1.getEmail()))
+                .andExpect(jsonPath("$.content.[0].age").value(user1.getAge()))
+                .andExpect(jsonPath("$.content.[1].id").value(user2.getId()))
+                .andExpect(jsonPath("$.content.[1].username").value(user2.getUsername()))
+                .andExpect(jsonPath("$.content.[1].email").value(user2.getEmail()))
+                .andExpect(jsonPath("$.content.[1].age").value(user2.getAge()))
                 .andExpect(status().isOk());
 
         // Assert
-        verify(userService2, times(1)).getAllUsers();
+        verify(userService2, times(1)).getAllUsers(any(Pageable.class));
     }
 
     @Test
@@ -429,8 +433,8 @@ class UserControllerV2Test {
     @DisplayName("[GET] Users Statistics --> 200 OK")
     void should_return_users_statistics_and_status_200_ok_when_user_is_admin() throws Exception {
         // Arrange
-        when(userService2.getAllUsers()).thenReturn(List.of(user1, user2));
-        when(userService2.countAdultUsers()).thenReturn(2L);
+        when(userService2.countAllUsers()).thenReturn(2L);
+        when(userService2.countAdultUsers()).thenReturn(2);
 
         // Act & Assert
         mockMvc.perform(get(BASE_URL + "/stats")
@@ -441,7 +445,7 @@ class UserControllerV2Test {
                 .andExpect(jsonPath("$.adultUsersPercentage").isNumber());
 
         // Assert
-        verify(userService2, times(1)).getAllUsers();
+        verify(userService2, times(1)).countAllUsers();
         verify(userService2, times(1)).countAdultUsers();
     }
 
@@ -453,7 +457,7 @@ class UserControllerV2Test {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
 
-        verify(userService2, never()).getAllUsers();
+        verify(userService2, never()).getAllUsers(any(Pageable.class));
         verify(userService2, never()).countAdultUsers();
     }
 
@@ -466,7 +470,7 @@ class UserControllerV2Test {
                     .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isForbidden());
 
-        verify(userService2, never()).getAllUsers();
+        verify(userService2, never()).getAllUsers(any(Pageable.class));
         verify(userService2, never()).countAdultUsers();
     }
 
