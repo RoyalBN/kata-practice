@@ -1,8 +1,12 @@
 package spring_boot_debugging.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
-import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -11,11 +15,8 @@ import spring_boot_debugging.dto.CreateUserRequest;
 import spring_boot_debugging.dto.UpdateUserRequest;
 import spring_boot_debugging.dto.UserDTO;
 import spring_boot_debugging.dto.UserStatisticsResponse;
-import spring_boot_debugging.model.User;
-import spring_boot_debugging.service.UserService;
 import spring_boot_debugging.service.UserService2;
 
-import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -65,6 +66,17 @@ public class UserControllerV2 {
             @PathVariable @Positive(message = "Id must be positive") Long id) {
         userService2.deleteUserById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @GetMapping("/search")
+    public ResponseEntity<Page<UserDTO>> searchUser(
+            @RequestParam @NotBlank(message = "Username is required") String username,
+            @RequestParam(defaultValue = "0")  int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(username).ascending());
+        Page<UserDTO> dtoPage = userService2.searchUser(username, pageable);
+        return ResponseEntity.ok(dtoPage);
     }
 
     @PreAuthorize("hasRole('ADMIN')")

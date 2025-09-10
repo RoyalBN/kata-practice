@@ -1,5 +1,7 @@
 package spring_boot_debugging.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import spring_boot_debugging.dto.CreateUserRequest;
@@ -96,5 +98,16 @@ public class UserService2 {
                 .stream()
                 .filter(user -> user.getAge() >= 18)
                 .count();
+    }
+
+    public Page<UserDTO> searchUser(String username, Pageable pageable) {
+        Page<User> users = userRepository.findByUsernameContaining(username, pageable);
+
+        return users.map(user -> UserDTO.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .age(user.getAge())
+                .build());
     }
 }

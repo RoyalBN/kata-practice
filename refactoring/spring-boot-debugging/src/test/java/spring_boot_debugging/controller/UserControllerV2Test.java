@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.*;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -348,10 +349,80 @@ class UserControllerV2Test {
     }
 
     // [GET] Search User --> 200 OK
-    // [GET] Search User --> 401 Unauthorized
-    // [GET] Search User --> 404 Not Found
-    // [GET] Search User --> 400 Bad Request
+    @Test
+    @WithMockUser(username = "user", roles = "USER")
+    @DisplayName("[GET] Search User --> 200 OK")
+    void should_reuturn_searched_user_and_status_200_ok_when_user_is_authenticated() throws Exception {
+        // Arrange
+        String username = "John";
+        Pageable pageable = PageRequest.of(
+                0,
+                10,
+                Sort.by("username").ascending());
 
+        Page<UserDTO> page = new PageImpl<>(List.of(user1), pageable, 1);
+
+        when(userService2.searchUser(eq(username), any(Pageable.class))).thenReturn(page);
+
+        // Act
+        mockMvc.perform(get(BASE_URL + "/search")
+                .contentType(MediaType.APPLICATION_JSON)
+                        .param("username", username)
+                        .param("page", "0")
+                        .param("size", "10")
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].username").value(username))
+                .andExpect(jsonPath("$.totalElements").value(1));
+
+        // Assert
+        verify(userService2, times(1)).searchUser(eq(username), any(Pageable.class));
+    }
+
+    // [GET] Search User --> 401 Unauthorized
+    @Test
+    @DisplayName("[GET] Search User --> 401 Unauthorized")
+    void should_return_401_unauthorized_when_searching_user_and_not_authenticated() throws Exception {
+        // Arrange
+
+
+        // Act
+        mockMvc.perform(get(BASE_URL + "/search")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized());
+
+        // Assert
+        verify(userService2, never()).searchUser(any(String.class), any(Pageable.class));
+    }
+
+    // [GET] Search User --> 400 Bad Request
+    @Test
+    @WithMockUser(username = "user", roles = "USER")
+    @DisplayName("[GET] Search User --> 400 Bad Request")
+    void should_return_400_bad_for_search_user_when_username_is_invalid() throws Exception {
+        // Arrange
+        String invalidUsername = "";
+        Pageable pageable = PageRequest.of(
+                0,
+                10,
+                Sort.by("username").ascending());
+
+        Page<UserDTO> page = new PageImpl<>(List.of(user1), pageable, 1);
+
+        when(userService2.searchUser(eq(invalidUsername), any(Pageable.class))).thenReturn(page);
+
+        // Act
+        mockMvc.perform(get(BASE_URL + "/search")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .param("username", invalidUsername)
+                        .param("page", "0")
+                        .param("size", "10")
+                )
+                .andExpect(status().isBadRequest());
+
+        // Assert
+        verify(userService2, never()).searchUser(any(String.class), any(Pageable.class));
+    }
 
     @Test
     @WithMockUser(username = "admin", roles = "ADMIN")
@@ -374,7 +445,6 @@ class UserControllerV2Test {
         verify(userService2, times(1)).countAdultUsers();
     }
 
-    // [GET] Users Statistics --> 401 Unauthorized
     @Test
     @DisplayName("[GET] Users Statistics --> 401 Unauthorized")
     void should_return_status_401_unauthorized_when_user_is_not_authenticated() throws Exception {
