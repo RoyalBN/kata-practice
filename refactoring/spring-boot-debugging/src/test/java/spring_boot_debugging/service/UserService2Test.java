@@ -8,6 +8,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.server.ResponseStatusException;
 import spring_boot_debugging.dto.CreateUserRequest;
 import spring_boot_debugging.dto.UserDTO;
@@ -22,7 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.ThrowableAssert.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class UserService2Test {
@@ -82,6 +83,7 @@ class UserService2Test {
         assertThat(newUser.getUsername()).isEqualTo(validCreateUserRequest.getUsername());
         assertThat(newUser.getEmail()).isEqualTo(validCreateUserRequest.getEmail());
         assertThat(newUser.getAge()).isEqualTo(validCreateUserRequest.getAge());
+        verify(userRepository2, times(1)).save(any(User.class));
     }
 
     // [CREATE] Create user --> User already exists
@@ -98,16 +100,53 @@ class UserService2Test {
         assertThat(exception)
                 .isInstanceOf(UserAlreadyExistsException.class)
                 .hasMessage("User with email " + validCreateUserRequest.getEmail() + " already exists");
+        verify(userRepository2, never()).save(any(User.class));
+    }
+
+    // [READ] Get user by id --> Successfully retrieved
+    @Test
+    @DisplayName("[READ] Get user by id --> Successfully retrieved")
+    void should_retrieve_user_successfully_when_id_is_valid() {
+        // Arrange
+        Long userId = 1L;
+        when(userRepository2.findById(userId)).thenReturn(Optional.of(savedUser));
+
+        // Act
+        UserDTO retrievedUser = userService2.getUserById(userId);
+
+        // Assert
+        assertThat(retrievedUser).isNotNull();
+        assertThat(retrievedUser.getId()).isEqualTo(userId);
+        assertThat(retrievedUser.getUsername()).isEqualTo(savedUser.getUsername());
+        assertThat(retrievedUser.getEmail()).isEqualTo(savedUser.getEmail());
+        assertThat(retrievedUser.getAge()).isEqualTo(savedUser.getAge());
+        verify(userRepository2, times(1)).findById(userId);
     }
 
 
-    // [READ] Get user by id --> 200 OK
-    // [READ] Get user by id --> 404 Not Found
-    // [READ] Get user by id --> 400 Bad Request
+    // [READ] Get user by id --> User not found
+    @Test
+    @DisplayName("[READ] Get user by id --> User not found")
+    void should_throw_an_exception_if_user_not_found_when_retrieving_user() {
+        // Arrange
+        Long userId = 123L;
+        when(userRepository2.findById(userId)).thenReturn(Optional.empty());
 
-    // [READ] Get all users --> 200 OK
-    // [READ] Get all users --> 404 Not Found
-    // [READ] Get all users --> 400 Bad Request
+        // Act
+        Throwable exception = catchThrowable(() -> userService2.getUserById(userId));
+
+        // Assert
+        assertThat(exception)
+                .isInstanceOf(UsernameNotFoundException.class)
+                .hasMessage("User with id " + userId + " not found");
+        verify(userRepository2, times(1)).findById(userId);
+    }
+
+    // [READ] Get all users --> Return list of users
+    // [READ] Get all users --> Return empty list
+    // [READ] Get all users --> Return page of users
+    // [READ] Get all users --> Return page of users with pagination
+    // [READ] Get all users --> Return page of users with pagination and sorting
 
     // [UPDATE] Update user --> 200 OK
     // [UPDATE] Update user --> 404 Not Found
