@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import spring_boot_debugging.dto.CreateUserRequest;
 import spring_boot_debugging.dto.UpdateUserRequest;
 import spring_boot_debugging.dto.UserDTO;
+import spring_boot_debugging.exception.UserAlreadyExistsException;
 import spring_boot_debugging.model.User;
 import spring_boot_debugging.repository.UserRepository2;
 
@@ -20,6 +21,10 @@ public class UserService2 {
     }
 
     public UserDTO createUser(CreateUserRequest user) {
+
+        if(userRepository.findByEmail(user.getEmail()).isPresent()) {
+            throw new UserAlreadyExistsException("User with email " + user.getEmail() + " already exists");
+        }
 
         User userToCreate = User.builder()
                 .username(user.getUsername())
