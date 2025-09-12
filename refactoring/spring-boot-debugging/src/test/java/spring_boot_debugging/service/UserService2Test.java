@@ -8,9 +8,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.*;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.web.server.ResponseStatusException;
 import spring_boot_debugging.dto.CreateUserRequest;
 import spring_boot_debugging.dto.UpdateUserRequest;
 import spring_boot_debugging.dto.UserDTO;
@@ -328,6 +325,52 @@ class UserService2Test {
     }
 
     // [SEARCH] Search users --> Return list of users
+    @Test
+    @DisplayName("[SEARCH] Search users --> Return list of users")
+    void should_return_list_of_users_when_searching_users() {
+        // Arrange
+        String prefixToFind = "J";
+        Pageable pageable = PageRequest.of(0, 10);
+        when(userRepository2.findByUsernameContaining(prefixToFind, pageable)).thenReturn(new PageImpl<>(List.of(user2, user1), pageable, 2));
+
+        // Act
+        Page<UserDTO> page = userService2.searchUsers(prefixToFind, pageable);
+        List<UserDTO> userDTOList = page.getContent().stream().toList();
+
+        // Assert
+        assertThat(page).isNotNull();
+        assertThat(page.getNumberOfElements()).isEqualTo(2);
+        assertThat(page.getTotalPages()).isEqualTo(1);
+
+        assertThat(userDTOList).isNotEmpty();
+        assertThat(userDTOList.size()).isEqualTo(2);
+        assertThat(userDTOList.get(0).getUsername()).startsWith(prefixToFind);
+        assertThat(userDTOList.get(1).getUsername()).startsWith(prefixToFind);
+        assertThat(userDTOList.get(1).getUsername()).doesNotStartWith("david");
+
+         verify(userRepository2, times(1)).findByUsernameContaining(prefixToFind, pageable);
+    }
+
     // [SEARCH] Search users --> Return empty list
+    @Test
+    @DisplayName("[SEARCH] Search users --> Return empty list")
+    void should_() {
+        // Arrange
+        String prefixToFind = "Y";
+        Pageable pageable = PageRequest.of(0, 10);
+        when(userRepository2.findByUsernameContaining(prefixToFind, pageable)).thenReturn(new PageImpl<>(List.of(), pageable, 0));
+
+        // Act
+        Page<UserDTO> page = userService2.searchUsers(prefixToFind, pageable);
+        List<UserDTO> userDTOList = page.getContent().stream().toList();
+
+        // Assert
+        assertThat(page).isNotNull();
+        assertThat(page.getNumberOfElements()).isZero();
+        assertThat(page.getTotalPages()).isZero();
+        assertThat(userDTOList).isEmpty();
+
+        verify(userRepository2, times(1)).findByUsernameContaining(prefixToFind, pageable);
+    }
 
 }

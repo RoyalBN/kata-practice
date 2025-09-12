@@ -103,7 +103,7 @@ public class UserService2 {
         return userRepository.countByAgeGreaterThanEqual(18);
     }
 
-    public Page<UserDTO> searchUser(String username, Pageable pageable) {
+    public Page<UserDTO> searchUsers(String username, Pageable pageable) {
         Page<User> users = userRepository.findByUsernameContaining(username, pageable);
 
         return users.map(user -> UserDTO.builder()
