@@ -79,7 +79,7 @@ public class UserControllerV2 {
             @RequestParam @NotBlank(message = "Username is required") String username,
             @RequestParam(defaultValue = "0")  int page,
             @RequestParam(defaultValue = "10") int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(username).ascending());
+        Pageable pageable = PageRequest.of(page, size, Sort.by("username").ascending());
         Page<UserDTO> dtoPage = userService2.searchUser(username, pageable);
         return ResponseEntity.ok(dtoPage);
     }

@@ -7,6 +7,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.server.ResponseStatusException;
@@ -16,6 +17,7 @@ import spring_boot_debugging.exception.UserAlreadyExistsException;
 import spring_boot_debugging.model.User;
 import spring_boot_debugging.repository.UserRepository2;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,6 +39,10 @@ class UserService2Test {
     private User savedUser;
     private CreateUserRequest validCreateUserRequest;
     private CreateUserRequest invalidCreateUserRequest;
+
+    Page<User> usersPage;
+    User user1;
+    User user2;
 
     @BeforeEach
     void setUp() {
@@ -65,6 +71,25 @@ class UserService2Test {
                 .roles(List.of("USER", "ADMIN"))
                 .build();
 
+        user1 = User.builder()
+                .id(2L)
+                .username("John")
+                .email("john.doe@example.com")
+                .password("john-1234")
+                .age(27)
+                .roles(List.of("USER", "ADMIN"))
+                .build();
+
+        user2 = User.builder()
+                .id(3L)
+                .username("Jane")
+                .email("jane.doe@example.com")
+                .password("jane-1234")
+                .age(22)
+                .roles(List.of("USER", "ADMIN"))
+                .build();
+
+        usersPage = new PageImpl<>(List.of(user1, user2));
     }
 
     // [CREATE] Create user successfully
@@ -142,11 +167,68 @@ class UserService2Test {
         verify(userRepository2, times(1)).findById(userId);
     }
 
-    // [READ] Get all users --> Return list of users
-    // [READ] Get all users --> Return empty list
-    // [READ] Get all users --> Return page of users
     // [READ] Get all users --> Return page of users with pagination
+    @Test
+    @DisplayName("[READ] Get all users --> Return page of users with pagination")
+    void should_return_page_of_users_when_getting_all_users() {
+        // Arrange
+        Pageable pageable = PageRequest.of(0, 10);
+        when(userRepository2.findAll(pageable)).thenReturn(usersPage);
+
+        // Act
+        Page<UserDTO> users = userService2.getAllUsers(pageable);
+        List<UserDTO> userDTOList = users.getContent();
+
+        // Assert
+        assertThat(users.getNumberOfElements()).isEqualTo(2);
+        assertThat(users.getTotalPages()).isEqualTo(1);
+
+        assertThat(userDTOList).isNotEmpty();
+        assertThat(userDTOList.size()).isEqualTo(usersPage.getContent().size());
+        assertThat(userDTOList.get(0).getId()).isEqualTo(usersPage.getContent().get(0).getId());
+        assertThat(userDTOList.get(0).getUsername()).isEqualTo(usersPage.getContent().get(0).getUsername());
+        assertThat(userDTOList.get(0).getEmail()).isEqualTo(usersPage.getContent().get(0).getEmail());
+        assertThat(userDTOList.get(0).getAge()).isEqualTo(usersPage.getContent().get(0).getAge());
+    }
+
+    // [READ] Get all users --> Return empty list
+    @Test
+    @DisplayName("[READ] Get all users --> Return empty list")
+    void should_return_an_empty_list_when_getting_all_users() {
+        // Arrange
+        Pageable pageable = PageRequest.of(0, 10);
+        when(userRepository2.findAll(pageable)).thenReturn(new PageImpl<>(List.of(), pageable, 0));
+
+        // Act
+        Page<UserDTO> page = userService2.getAllUsers(pageable);
+
+        // Assert
+        assertThat(page.getNumberOfElements()).isZero();
+        assertThat(page.getTotalPages()).isZero();
+    }
+
     // [READ] Get all users --> Return page of users with pagination and sorting
+    @Test
+    @DisplayName("[READ] Get all users --> Return page of users with pagination and sorting")
+    void should_return_page_of_users_with_pagination_and_sorting_when_getting_all_users() {
+        // Arrange
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("username").ascending());
+        when(userRepository2.findAll(pageable)).thenReturn(new PageImpl<>(List.of(user2, user1), pageable, 2));
+
+        // Act
+        Page<UserDTO> page = userService2.getAllUsers(pageable);
+
+        // Assert
+        assertThat(page.getNumberOfElements()).isEqualTo(2);
+        assertThat(page.getTotalPages()).isEqualTo(1);
+
+        List<UserDTO> userDTOList = page.getContent().stream()
+                .toList();
+
+        assertThat(userDTOList).isNotEmpty();
+        assertThat(userDTOList.size()).isEqualTo(2);
+        assertThat(userDTOList).isSortedAccordingTo(Comparator.comparing(UserDTO::getUsername));
+    }
 
     // [UPDATE] Update user --> 200 OK
     // [UPDATE] Update user --> 404 Not Found
