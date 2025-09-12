@@ -1,6 +1,7 @@
 package spring_boot_debugging.exception;
 
 import org.springframework.http.*;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -48,6 +49,15 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return problemDetail;
     }
 
+    @ExceptionHandler(UserNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ProblemDetail handleUserNotFoundException(UserNotFoundException ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
+        problemDetail.setTitle("User Not Found");
+        problemDetail.setDetail(ex.getMessage());
+        return problemDetail;
+    }
+
 
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -67,28 +77,14 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return problemDetail;
     }
 
-
-
-
-
-
-    // Problème : Pas de gestion spécifique pour les erreurs 404
-    // Problème : Pas de gestion des erreurs de validation
-    // Problème : Pas de gestion des erreurs d'authentification/autorisation
-
-    public static class ErrorDetails {
-        private Date timestamp;
-        private String message;
-        private String details;
-        private String stackTrace;  // Problème : Exposition de la stack trace
-
-        public ErrorDetails(Date timestamp, String message, String details, String stackTrace) {
-            this.timestamp = timestamp;
-            this.message = message;
-            this.details = details;
-            this.stackTrace = stackTrace;
-        }
-
-        // Problème : Pas de getters/setters
+    @ExceptionHandler(AccessDeniedException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ProblemDetail handleAccessDenied(AccessDeniedException ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.FORBIDDEN);
+        problemDetail.setTitle("Access Denied");
+        problemDetail.setDetail(ex.getMessage());
+        return problemDetail;
     }
+
+
 }

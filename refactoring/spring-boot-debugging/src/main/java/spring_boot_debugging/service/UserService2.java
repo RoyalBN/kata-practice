@@ -2,12 +2,12 @@ package spring_boot_debugging.service;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import spring_boot_debugging.dto.CreateUserRequest;
 import spring_boot_debugging.dto.UpdateUserRequest;
 import spring_boot_debugging.dto.UserDTO;
 import spring_boot_debugging.exception.UserAlreadyExistsException;
+import spring_boot_debugging.exception.UserNotFoundException;
 import spring_boot_debugging.model.User;
 import spring_boot_debugging.repository.UserRepository2;
 
@@ -47,7 +47,7 @@ public class UserService2 {
 
     public UserDTO getUserById(Long id) {
         User foundUser = userRepository.findById(id)
-                .orElseThrow(() -> new UsernameNotFoundException("User with id " + id + " not found"));
+                .orElseThrow(() -> new UserNotFoundException("User with id " + id + " not found"));
 
         return UserDTO.builder()
                 .id(foundUser.getId())
@@ -69,7 +69,7 @@ public class UserService2 {
 
     public UserDTO updateUser(Long userId, UpdateUserRequest updateUserRequest) {
         User foundUser = userRepository.findById(userId)
-                .orElseThrow(() -> new UsernameNotFoundException("User with id " + userId + " not found"));
+                .orElseThrow(() -> new UserNotFoundException("User with id " + userId + " not found"));
 
         User userToUpdate = User.builder()
                 .id(foundUser.getId())
@@ -91,7 +91,7 @@ public class UserService2 {
 
     public void deleteUserById(Long userId) {
         User foundUser = userRepository.findById(userId)
-                .orElseThrow(() -> new UsernameNotFoundException("User with id " + userId + " not found"));
+                .orElseThrow(() -> new UserNotFoundException("User with id " + userId + " not found"));
         userRepository.delete(foundUser);
     }
 

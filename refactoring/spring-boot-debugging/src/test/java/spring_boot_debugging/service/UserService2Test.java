@@ -12,8 +12,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.server.ResponseStatusException;
 import spring_boot_debugging.dto.CreateUserRequest;
+import spring_boot_debugging.dto.UpdateUserRequest;
 import spring_boot_debugging.dto.UserDTO;
 import spring_boot_debugging.exception.UserAlreadyExistsException;
+import spring_boot_debugging.exception.UserNotFoundException;
 import spring_boot_debugging.model.User;
 import spring_boot_debugging.repository.UserRepository2;
 
@@ -38,7 +40,10 @@ class UserService2Test {
 
     private User savedUser;
     private CreateUserRequest validCreateUserRequest;
-    private CreateUserRequest invalidCreateUserRequest;
+
+    private UpdateUserRequest validUpdateUserRequest;
+    private User updatedUser;
+
 
     Page<User> usersPage;
     User user1;
@@ -54,11 +59,20 @@ class UserService2Test {
                 .roles(List.of("USER", "ADMIN"))
                 .build();
 
-        invalidCreateUserRequest = CreateUserRequest.builder()
-                .username("")
-                .password("pasds-1234")
+        validUpdateUserRequest = UpdateUserRequest.builder()
+                .username("David")
+                .password("dav-1234")
                 .email("david.henri@example.com")
-                .age(31)
+                .age(33)
+                .roles(List.of("USER", "ADMIN"))
+                .build();
+
+        updatedUser = User.builder()
+                .id(1L)
+                .username("David")
+                .password("dav-1234")
+                .email("david.henri@example.com")
+                .age(33)
                 .roles(List.of("USER", "ADMIN"))
                 .build();
 
@@ -162,7 +176,7 @@ class UserService2Test {
 
         // Assert
         assertThat(exception)
-                .isInstanceOf(UsernameNotFoundException.class)
+                .isInstanceOf(UserNotFoundException.class)
                 .hasMessage("User with id " + userId + " not found");
         verify(userRepository2, times(1)).findById(userId);
     }
@@ -189,6 +203,7 @@ class UserService2Test {
         assertThat(userDTOList.get(0).getUsername()).isEqualTo(usersPage.getContent().get(0).getUsername());
         assertThat(userDTOList.get(0).getEmail()).isEqualTo(usersPage.getContent().get(0).getEmail());
         assertThat(userDTOList.get(0).getAge()).isEqualTo(usersPage.getContent().get(0).getAge());
+        verify(userRepository2, times(1)).findAll(pageable);
     }
 
     // [READ] Get all users --> Return empty list
@@ -205,6 +220,7 @@ class UserService2Test {
         // Assert
         assertThat(page.getNumberOfElements()).isZero();
         assertThat(page.getTotalPages()).isZero();
+        verify(userRepository2, times(1)).findAll(pageable);
     }
 
     // [READ] Get all users --> Return page of users with pagination and sorting
@@ -228,15 +244,57 @@ class UserService2Test {
         assertThat(userDTOList).isNotEmpty();
         assertThat(userDTOList.size()).isEqualTo(2);
         assertThat(userDTOList).isSortedAccordingTo(Comparator.comparing(UserDTO::getUsername));
+        verify(userRepository2, times(1)).findAll(pageable);
     }
 
-    // [UPDATE] Update user --> 200 OK
-    // [UPDATE] Update user --> 404 Not Found
-    // [UPDATE] Update user --> 400 Bad Request
+    // [UPDATE] Update user --> Retrieve user successfully
+    @Test
+    @DisplayName("[UPDATE] Update user --> Retrieve user successfully")
+    void should_update_user_successfully_when_user_is_found() {
+        // Arrange
+        Long userId = 1L;
+        when(userRepository2.findById(userId)).thenReturn(Optional.of(savedUser));
+        when(userRepository2.save(any(User.class))).thenReturn(updatedUser);
 
-    // [DELETE] Delete user --> 200 OK
-    // [DELETE] Delete user --> 404 Not Found
-    // [DELETE] Delete user --> 400 Bad Request
+        // Act
+        UserDTO userUpdated = userService2.updateUser(userId, validUpdateUserRequest);
 
+        // Assert
+        assertThat(userUpdated).isNotNull();
+        assertThat(userUpdated.getId()).isEqualTo(userId);
+        assertThat(userUpdated.getUsername()).isEqualTo(validUpdateUserRequest.getUsername());
+        assertThat(userUpdated.getEmail()).isEqualTo(validUpdateUserRequest.getEmail());
+        assertThat(userUpdated.getAge()).isEqualTo(validUpdateUserRequest.getAge());
+
+        verify(userRepository2, times(1)).findById(userId);
+        verify(userRepository2, times(1)).save(any(User.class));
+    }
+
+
+    // [UPDATE] Update user --> User Not Found
+    @Test
+    @DisplayName("[UPDATE] Update user --> User Not Found")
+    void should_throw_an_exception_if_user_not_found_when_updating_user() {
+        // Arrange
+        Long nonExistantId = 123L;
+        when(userRepository2.findById(nonExistantId)).thenReturn(Optional.empty());
+
+        // Act
+        Throwable exception = catchThrowable(() -> userService2.updateUser(nonExistantId, validUpdateUserRequest));
+
+        // Assert
+        assertThat(exception)
+                .isInstanceOf(UserNotFoundException.class)
+                .hasMessage("User with id " + nonExistantId + " not found");
+
+        verify(userRepository2, times(1)).findById(nonExistantId);
+        verify(userRepository2, never()).save(any(User.class));
+    }
+
+    // [DELETE] Delete user --> Delete user successfully
+    // [DELETE] Delete user --> User Not Found
+
+    // [SEARCH] Search users --> Return list of users
+    // [SEARCH] Search users --> Return empty list
 
 }
