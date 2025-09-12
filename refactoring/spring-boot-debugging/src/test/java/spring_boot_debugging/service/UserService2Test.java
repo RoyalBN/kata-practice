@@ -292,7 +292,40 @@ class UserService2Test {
     }
 
     // [DELETE] Delete user --> Delete user successfully
+    @Test
+    @DisplayName("[DELETE] Delete user --> Delete user successfully")
+    void should_delete_user_successfully_when_user_is_found() {
+        // Arrange
+        Long userIdToDelete = 1L;
+        when(userRepository2.findById(userIdToDelete)).thenReturn(Optional.of(savedUser));
+
+        // Act
+        userService2.deleteUserById(userIdToDelete);
+
+        // Assert
+        verify(userRepository2, times(1)).findById(userIdToDelete);
+        verify(userRepository2, times(1)).delete(eq(savedUser));
+    }
+
     // [DELETE] Delete user --> User Not Found
+    @Test
+    @DisplayName("[DELETE] Delete user --> User Not Found")
+    void should_throw_an_exception_if_user_not_found_when_deleting_user() {
+        // Arrange
+        Long nonExistantId = 123L;
+        when(userRepository2.findById(nonExistantId)).thenReturn(Optional.empty());
+
+        // Act
+        Throwable exception = catchThrowable(() -> userService2.deleteUserById(nonExistantId));
+
+        // Assert
+        assertThat(exception)
+                .isInstanceOf(UserNotFoundException.class)
+                .hasMessage("User with id " + nonExistantId + " not found");
+
+        verify(userRepository2, times(1)).findById(nonExistantId);
+        verify(userRepository2, never()).delete(any(User.class));
+    }
 
     // [SEARCH] Search users --> Return list of users
     // [SEARCH] Search users --> Return empty list
